@@ -16,7 +16,9 @@ const gameState = {
 
 let map = null;
 let geoJsonLayer = null;
-let maskLayer = null;
+let basemapLayer = null;
+let loadedGeoJsonPath = null;
+const MIN_MAP_ZOOM = 1;
 
 document.addEventListener("DOMContentLoaded", () => {
   setupGameControls();
@@ -135,11 +137,17 @@ async function startGame(provinceName) {
   const startBtn = document.getElementById("start-game-btn");
   if (startBtn) startBtn.disabled = true;
 
-  const loaded = await loadGeoJsonMap(geoJsonPath);
-  if (!loaded) {
-    resetRuntimeState();
-    if (startBtn) startBtn.disabled = false;
-    return;
+  if (loadedGeoJsonPath === geoJsonPath && geoJsonLayer && basemapLayer) {
+    geoJsonLayer.eachLayer((layer) => layer.unbindTooltip());
+    geoJsonLayer.setStyle(getFeatureStyle);
+    fitMapToProvince(geoJsonLayer.getBounds(), { padding: [20, 20] });
+  } else {
+    const loaded = await loadGeoJsonMap(geoJsonPath);
+    if (!loaded) {
+      resetRuntimeState();
+      if (startBtn) startBtn.disabled = false;
+      return;
+    }
   }
 
   if (startBtn) {
@@ -157,19 +165,27 @@ async function loadGeoJsonMap(geoJsonPath) {
   mapContainer.classList.add("loading");
 
   try {
+    if (map) {
+      map.stop();
+    }
+
     if (!map) {
       mapContainer.innerHTML = "";
-      map = L.map(mapContainer, { attributionControl: false }).setView([42.7339, 25.4858], 8);
+      map = L.map(mapContainer, {
+        fadeAnimation: false,
+        minZoom: MIN_MAP_ZOOM,
+        maxBoundsViscosity: 0.8,
+      }).setView([42.7339, 25.4858], 8);
     } else {
       if (geoJsonLayer) {
         map.removeLayer(geoJsonLayer);
         geoJsonLayer = null;
       }
-      if (maskLayer) {
-        map.removeLayer(maskLayer);
-        maskLayer = null;
+      if (basemapLayer) {
+        map.removeLayer(basemapLayer);
+        basemapLayer = null;
       }
-      map.setMinZoom(1);
+      loadedGeoJsonPath = null;
       map.setMaxBounds(null);
       map.invalidateSize();
     }
@@ -181,42 +197,59 @@ async function loadGeoJsonMap(geoJsonPath) {
     const features = Array.isArray(geoJson.features) ? geoJson.features : [];
     if (features.length === 0) throw new Error("GeoJSON няма features.");
 
-    // Generate inverted polygon mask using Turf.js
-    const mask = turf.mask(geoJson);
-
-    // Style mask layer to completely hide outside world using page background
-    maskLayer = L.geoJSON(mask, {
-      style: {
-        fillColor: '#f6fbf6',
-        fillOpacity: 1,
-        stroke: false
-      },
-      interactive: false
-    }).addTo(map);
-
     geoJsonLayer = L.geoJSON(geoJson, {
       style: getFeatureStyle,
       onEachFeature: onEachFeature
+    });
+
+    const basemapPath = geoJsonPath
+      .replace(/^assets\/geo\//, "assets/provinces_basemaps/")
+      .replace(/\.geojson$/i, ".jpg");
+    const basemapImage = new Image();
+    await new Promise((resolve, reject) => {
+      basemapImage.onload = resolve;
+      basemapImage.onerror = () => reject(new Error(`Базовата карта не може да се зареди: ${basemapPath}`));
+      basemapImage.src = basemapPath;
+      if (basemapImage.complete && basemapImage.naturalWidth > 0) resolve();
+    });
+    basemapLayer = L.imageOverlay(basemapPath, geoJsonLayer.getBounds(), {
+      attribution: "Terrain basemap &copy; Esri",
+      interactive: false,
     }).addTo(map);
 
+    geoJsonLayer.addTo(map);
+
     // Auto-zoom to fit the selected province
-    map.fitBounds(geoJsonLayer.getBounds(), { padding: [20, 20] });
-
-    // Constrain camera view and lock minimum zoom
-    map.setMaxBounds(geoJsonLayer.getBounds().pad(0.1));
-    map.setMinZoom(map.getZoom());
-
-    setTimeout(() => {
-      mapContainer.classList.remove("loading");
-    }, 250);
+    const provinceBounds = geoJsonLayer.getBounds();
+    fitMapToProvince(provinceBounds, { padding: [20, 20], animate: false });
+    const southWest = provinceBounds.getSouthWest();
+    const northEast = provinceBounds.getNorthEast();
+    const latitudePadding = provinceBounds.getNorth() - provinceBounds.getSouth();
+    const longitudePadding = provinceBounds.getEast() - provinceBounds.getWest();
+    map.setMaxBounds(
+      L.latLngBounds(
+        [southWest.lat - latitudePadding * 0.35, southWest.lng - longitudePadding * 0.75],
+        [northEast.lat + latitudePadding * 0.35, northEast.lng + longitudePadding * 0.75]
+      )
+    );
+    loadedGeoJsonPath = geoJsonPath;
+    mapContainer.classList.remove("loading");
 
     return true;
   } catch (error) {
+    loadedGeoJsonPath = null;
     mapContainer.classList.remove("loading");
     mapContainer.innerHTML = `<p class="placeholder">GeoJSON не може да се зареди: ${error.message}</p>`;
     setStatus("Възникна проблем при зареждането на картата.");
     return false;
   }
+}
+
+function fitMapToProvince(bounds, options) {
+  map.setMinZoom(MIN_MAP_ZOOM);
+  const padding = L.point(options.padding || [0, 0]);
+  map.setMinZoom(map.getBoundsZoom(bounds, false, padding));
+  map.fitBounds(bounds, options);
 }
 
 function getFeatureName(feature, fallbackIndex) {
@@ -232,7 +265,7 @@ function getFeatureStyle(feature) {
   if (isSolved) {
     return {
       fillColor: '#6fb783',
-      fillOpacity: 0.9,
+      fillOpacity: 0.7,
       color: '#1f2a1f',
       weight: 2,
       className: 'municipality-boundary is-correct'
@@ -445,7 +478,7 @@ function resetGameDisplay() {
   setStatus("Готов за начало.");
 
   if (map) {
-    map.setMinZoom(1);
+    map.setMinZoom(MIN_MAP_ZOOM);
     map.setMaxBounds(null);
   }
 
@@ -454,10 +487,11 @@ function resetGameDisplay() {
     geoJsonLayer = null;
   }
 
-  if (maskLayer && map) {
-    map.removeLayer(maskLayer);
-    maskLayer = null;
+  if (basemapLayer && map) {
+    map.removeLayer(basemapLayer);
+    basemapLayer = null;
   }
+  loadedGeoJsonPath = null;
 
   if (map) {
     map.setView([42.7339, 25.4858], 8);

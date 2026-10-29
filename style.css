@@ -344,7 +344,7 @@ select:focus-visible,
   width: 100%;
   height: min(72vh, 760px);
   min-height: 500px;
-  background: #f4f8f4;
+  background: #f6fbf5;
   transition: opacity 220ms ease-in-out;
 }
 
