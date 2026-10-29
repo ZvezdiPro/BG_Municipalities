@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="bg">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Общините на България</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <script src="https://unpkg.com/@turf/turf@6/turf.min.js"></script>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="app-header">
+        <h1>Общините на България</h1>
+        <p class="subtitle">Образователна платформа за опознаване на областите и общините</p>
+      </header>
+
+      <nav class="main-nav" aria-label="Основна навигация">
+        <button class="nav-btn is-active" data-target="game-section">Играй</button>
+        <button class="nav-btn" data-target="learn-section">Научи</button>
+        <button class="nav-btn" data-target="records-section">Рекорди</button>
+      </nav>
+
+      <main class="main-content">
+        <section id="learn-section" class="page-section" aria-labelledby="learn-heading">
+          <div class="learn-layout">
+            <div class="card controls-card">
+              <h2 id="learn-heading">Научи</h2>
+              <label for="province-select">Избери област:</label>
+              <select id="province-select">
+                <option value="">-- Избери област --</option>
+              </select>
+              <p class="hint">Ще се покаже изображение с етикети от папка <code>assets/labels</code>.</p>
+            </div>
+
+            <div class="card image-card">
+              <div id="label-image-container" class="image-container">
+                <p class="placeholder">Избери област, за да заредиш изображение.</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section id="game-section" class="page-section is-visible" aria-labelledby="game-heading">
+          <div class="game-layout">
+            <div class="card controls-card">
+              <h2 id="game-heading">Играй</h2>
+              <label for="game-province-select">Избери област:</label>
+              <select id="game-province-select">
+                <option value="">-- Избери област --</option>
+              </select>
+              <div class="game-actions">
+                <button id="start-game-btn" class="action-btn">Старт</button>
+                <button id="restart-game-btn" class="action-btn secondary-btn" disabled>Рестарт</button>
+              </div>
+              <div class="game-stats">
+                <div class="timer-card">
+                  <span class="stat-label">ВРЕМЕ</span>
+                  <div class="timer" id="game-timer" aria-live="off">00:00:000</div>
+                </div>
+                <div class="score-card">
+                  <span class="stat-label">ОТКРИТИ</span>
+                  <p id="game-score" class="status-text">0 / 0</p>
+                </div>
+                <div class="error-card">
+                  <span class="stat-label">ГРЕШКИ</span>
+                  <p id="game-errors" class="status-text">0</p>
+                </div>
+              </div>
+              <div class="prompt-card" aria-live="polite">
+                <span class="stat-label">НАМЕРИ ОБЩИНА</span>
+                <p id="game-prompt" class="game-prompt">Избери област и натисни „Старт“.</p>
+              </div>
+              <p class="hint">Кликни върху правилната община в картата.</p>
+              <p id="game-status" class="status-text">Готов за начало.</p>
+            </div>
+
+            <div class="card map-card">
+              <p id="game-feedback" class="game-feedback" aria-live="polite"></p>
+              <div id="map-container" class="svg-container">
+                <p class="placeholder">Избери област и натисни "Старт".</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section id="records-section" class="page-section" aria-labelledby="records-heading">
+          <div class="card">
+            <h2 id="records-heading">Рекорди</h2>
+            <table class="records-table">
+              <thead>
+                <tr>
+                  <th>Област</th>
+                  <th>Личен рекорд</th>
+                </tr>
+              </thead>
+              <tbody id="records-body"></tbody>
+            </table>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <script src="data.js"></script>
+    <script src="app.js"></script>
+    <script src="game.js"></script>
+  </body>
+</html>
