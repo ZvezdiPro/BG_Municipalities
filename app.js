@@ -114,6 +114,7 @@ const PROVINCE_ASSETS = {
 };
 
 const PROVINCE_RECORD_KEY_PREFIX = "Личен рекорд - ";
+window.BULGARIA_GAME_VALUE = "__bulgaria__";
 const PROVINCE_DATA = window.BULGARIAN_PROVINCES || {};
 const GEOJSON_BASE_PATH = "assets/geo";
 const PROVINCE_GEOJSON = {
@@ -181,6 +182,12 @@ const state = {
   selectedProvinceLearn: "",
 };
 
+let learnMap = null;
+let learnGeoJsonLayer = null;
+let selectedLearnMunicipality = null;
+let learnMapLoadPromise = null;
+let learnMunicipalityNameCounts = new Map();
+
 window.PROVINCE_ASSETS = PROVINCE_ASSETS;
 window.PROVINCE_DATA = PROVINCE_DATA;
 window.findProvinceAssetsByName = findProvinceAssetsByName;
@@ -213,6 +220,17 @@ function setupNavigation() {
       if (target === "records-section") {
         renderBestRecord();
       }
+
+      if (target === "learn-section") {
+        setTimeout(() => {
+          if (learnMap) {
+            learnMap.invalidateSize();
+            fitLearnMapToCountry();
+          } else {
+            setupLearnMunicipalityMap();
+          }
+        }, 150);
+      }
     });
   });
 }
@@ -243,6 +261,166 @@ function setupLearnSection() {
     state.selectedProvinceLearn = select.value;
     renderLabelImage(state.selectedProvinceLearn, container);
   });
+}
+
+function setupLearnMunicipalityMap() {
+  if (learnMap || learnMapLoadPromise) return;
+
+  const container = document.getElementById("learn-map-container");
+  container.classList.add("loading");
+  learnMapLoadPromise = loadLearnMunicipalityMap(container).finally(() => {
+    learnMapLoadPromise = null;
+  });
+}
+
+async function loadLearnMunicipalityMap(container) {
+  try {
+    const response = await fetch("assets/geo/bulgaria.geojson", { cache: "no-store" });
+    if (!response.ok) throw new Error(`Грешка при зареждане на общините (${response.status})`);
+    const geoJson = await response.json();
+    const features = Array.isArray(geoJson.features)
+      ? geoJson.features.filter((feature) => feature.properties?.border_type === "municipality")
+      : [];
+    if (features.length !== 265) {
+      throw new Error(`Очакват се 265 общини, но са намерени ${features.length}.`);
+    }
+
+    learnMunicipalityNameCounts = new Map();
+    features.forEach((feature) => {
+      const name = getLearnMunicipalityBaseName(feature);
+      learnMunicipalityNameCounts.set(name, (learnMunicipalityNameCounts.get(name) || 0) + 1);
+    });
+
+    container.replaceChildren();
+    learnMap = L.map(container, { fadeAnimation: false }).setView([42.7339, 25.4858], 6);
+    learnGeoJsonLayer = L.geoJSON({ ...geoJson, features }, {
+      style: getLearnMunicipalityStyle,
+      onEachFeature: setupLearnMunicipalityFeature,
+    }).addTo(learnMap);
+
+    const basemapPath = "assets/provinces_basemaps/bulgaria.jpg";
+    const basemapImage = new Image();
+    await new Promise((resolve, reject) => {
+      basemapImage.onload = resolve;
+      basemapImage.onerror = () => reject(new Error(`Базовата карта не може да се зареди: ${basemapPath}`));
+      basemapImage.src = basemapPath;
+      if (basemapImage.complete && basemapImage.naturalWidth > 0) resolve();
+    });
+
+    L.imageOverlay(basemapPath, learnGeoJsonLayer.getBounds(), {
+      attribution: "Terrain basemap &copy; Esri",
+      interactive: false,
+    }).addTo(learnMap);
+    learnGeoJsonLayer.bringToFront();
+    learnGeoJsonLayer.eachLayer((layer) => {
+      const path = layer.getElement();
+      if (path) path.setAttribute("tabindex", "0");
+    });
+    container.classList.remove("loading");
+    fitLearnMapToCountry();
+  } catch (error) {
+    container.classList.remove("loading");
+    container.replaceChildren();
+    const message = document.createElement("p");
+    message.className = "placeholder";
+    message.textContent = `Картата не може да се зареди: ${error.message}`;
+    container.append(message);
+    document.getElementById("learn-municipality-name").textContent = "Картата не е достъпна.";
+  }
+}
+
+function getLearnMunicipalityStyle() {
+  return {
+    fillColor: "#ffffff",
+    fillOpacity: 0.25,
+    color: "#718477",
+    weight: 2,
+    className: "municipality-boundary",
+  };
+}
+
+function setupLearnMunicipalityFeature(feature, layer) {
+  layer.on({
+    mouseover: () => {
+      showLearnMunicipalityName(feature);
+      if (selectedLearnMunicipality !== layer) {
+        layer.setStyle({ fillColor: "#fff1b8", fillOpacity: 0.6, color: "#8dcf9b", weight: 2.5 });
+        layer.bringToFront();
+      }
+    },
+    mouseout: () => {
+      if (selectedLearnMunicipality !== layer && learnGeoJsonLayer) {
+        learnGeoJsonLayer.resetStyle(layer);
+      }
+      showSelectedLearnMunicipalityName();
+    },
+    click: () => selectLearnMunicipality(feature, layer),
+    keypress: (event) => {
+      if (event.originalEvent.key === "Enter" || event.originalEvent.key === " ") {
+        L.DomEvent.preventDefault(event.originalEvent);
+        selectLearnMunicipality(feature, layer);
+      }
+    },
+  });
+}
+
+function selectLearnMunicipality(feature, layer) {
+  if (selectedLearnMunicipality && learnGeoJsonLayer) {
+    selectedLearnMunicipality.unbindTooltip();
+    learnGeoJsonLayer.resetStyle(selectedLearnMunicipality);
+  }
+  selectedLearnMunicipality = layer;
+  layer.setStyle({
+    fillColor: "#6fb783",
+    fillOpacity: 0.7,
+    color: "#1f2a1f",
+    weight: 3,
+  });
+  layer.bindTooltip(getLearnMunicipalityName(feature), {
+    permanent: true,
+    direction: "center",
+    className: "municipality-label",
+    interactive: false,
+    opacity: 1,
+  }).openTooltip();
+  layer.bringToFront();
+  showLearnMunicipalityName(feature);
+}
+
+function getLearnMunicipalityBaseName(feature) {
+  const properties = feature.properties || {};
+  return properties.name_bg || properties.name || "Община без име";
+}
+
+function getLearnMunicipalityName(feature) {
+  const name = getLearnMunicipalityBaseName(feature);
+  const properties = feature.properties || {};
+  return learnMunicipalityNameCounts.get(name) > 1 && properties.ekatte
+    ? `${name} (${properties.ekatte})`
+    : name;
+}
+
+function showLearnMunicipalityName(feature) {
+  document.getElementById("learn-municipality-name").textContent =
+    `Община ${getLearnMunicipalityName(feature)}`;
+}
+
+function showSelectedLearnMunicipalityName() {
+  const nameElement = document.getElementById("learn-municipality-name");
+  if (!selectedLearnMunicipality) {
+    nameElement.textContent = "Избери община на картата.";
+    return;
+  }
+  showLearnMunicipalityName(selectedLearnMunicipality.feature);
+}
+
+function fitLearnMapToCountry() {
+  if (!learnMap || !learnGeoJsonLayer) return;
+  const bounds = learnGeoJsonLayer.getBounds();
+  const padding = L.point(20, 20);
+  const countryZoom = learnMap.getBoundsZoom(bounds, false, padding);
+  learnMap.setMinZoom(countryZoom);
+  learnMap.fitBounds(bounds, { padding: [20, 20], animate: false });
 }
 
 function renderLabelImage(provinceName, container) {
@@ -333,6 +511,16 @@ function renderBestRecord() {
       row.append(provinceCell, recordCell);
       recordsBody.append(row);
     });
+
+  const countryRow = document.createElement("tr");
+  const countryCell = document.createElement("td");
+  const countryRecordCell = document.createElement("td");
+  const countryKeys = getProvinceRecordKeys(window.BULGARIA_GAME_VALUE);
+
+  countryCell.textContent = "България (265 общини)";
+  countryRecordCell.textContent = localStorage.getItem(countryKeys.time) || "Няма запис";
+  countryRow.append(countryCell, countryRecordCell);
+  recordsBody.append(countryRow);
 }
 
 function getProvinceRecordKeys(provinceName) {

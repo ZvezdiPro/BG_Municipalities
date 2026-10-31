@@ -1,6 +1,7 @@
 const gameState = {
   running: false,
   paused: false,
+  starting: false,
   selectedProvince: "",
   startTimestamp: 0,
   elapsedMs: 0,
@@ -10,7 +11,7 @@ const gameState = {
   errors: 0,
   totalMunicipalities: 0,
   remainingMunicipalities: [],
-  currentTarget: "",
+  currentTarget: null,
   solvedTargets: new Set(),
 };
 
@@ -19,6 +20,7 @@ let geoJsonLayer = null;
 let basemapLayer = null;
 let loadedGeoJsonPath = null;
 const MIN_MAP_ZOOM = 1;
+const COUNTRY_GEOJSON_PATH = "assets/geo/bulgaria.geojson";
 
 document.addEventListener("DOMContentLoaded", () => {
   setupGameControls();
@@ -29,6 +31,7 @@ function setupGameControls() {
   const restartBtn = document.getElementById("restart-game-btn");
   const provinceSelect = document.getElementById("game-province-select");
 
+  gameState.selectedProvince = provinceSelect.value;
   if (startBtn && provinceSelect) {
     startBtn.disabled = !provinceSelect.value;
   }
@@ -46,11 +49,15 @@ function setupGameControls() {
     if (restartBtn) restartBtn.disabled = !provinceSelect.value;
 
     resetRuntimeState();
-    setPrompt("Избери област и натисни „Старт“.");
-    setStatus("Готов за начало.");
+    setPrompt(provinceSelect.value === window.BULGARIA_GAME_VALUE
+      ? "Натисни „Старт“, за да играеш за цяла България."
+      : "Избери област и натисни „Старт“.");
+    setStatus(provinceSelect.value === window.BULGARIA_GAME_VALUE
+      ? "Готов за начало — 265 общини."
+      : "Готов за начало.");
 
     if (gameState.selectedProvince) {
-      const geoJsonPath = typeof window.getProvinceGeoJsonPath === "function" ? window.getProvinceGeoJsonPath(gameState.selectedProvince) : null;
+      const geoJsonPath = getGameGeoJsonPath(gameState.selectedProvince);
       if (geoJsonPath) {
         await loadGeoJsonMap(geoJsonPath);
       }
@@ -58,6 +65,11 @@ function setupGameControls() {
       resetGameDisplay();
     }
   });
+
+  const initialGeoJsonPath = getGameGeoJsonPath(gameState.selectedProvince);
+  if (initialGeoJsonPath) {
+    loadGeoJsonMap(initialGeoJsonPath);
+  }
 
   startBtn.addEventListener("click", async () => {
     if (gameState.running) {
@@ -101,6 +113,9 @@ function setupGameControls() {
   // Handle tab switching in app: invalidate Leaflet map size when returning to game section
   document.addEventListener("click", (e) => {
     const btn = e.target.closest(".nav-btn");
+    if (btn && ["learn-section", "records-section"].includes(btn.dataset.target)) {
+      abortGame();
+    }
     if (btn && btn.getAttribute("data-target") === "game-section") {
       if (map) {
         setTimeout(() => {
@@ -112,30 +127,27 @@ function setupGameControls() {
 }
 
 async function startGame(provinceName) {
+  const sessionId = ++gameSessionId;
   resetRuntimeState();
 
+  const isCountryGame = provinceName === window.BULGARIA_GAME_VALUE;
   const provinceData = window.BULGARIAN_PROVINCES || window.PROVINCE_DATA || {};
   const municipalities = Array.isArray(provinceData[provinceName]) ? provinceData[provinceName] : [];
-  if (municipalities.length === 0) {
+  if (!isCountryGame && municipalities.length === 0) {
     setStatus("Липсват общини за избраната област в data.js.");
     setPrompt("Няма данни за въпроси.");
     return;
   }
 
-  const geoJsonPath = typeof window.getProvinceGeoJsonPath === "function" ? window.getProvinceGeoJsonPath(provinceName) : null;
+  const geoJsonPath = getGameGeoJsonPath(provinceName);
   if (!geoJsonPath) {
     setStatus("Липсва .geojson конфигурация за областта.");
     setPrompt("Добави .geojson файл и опитай пак.");
     return;
   }
 
-  gameState.remainingMunicipalities = shuffleArray([...municipalities]);
-  gameState.totalMunicipalities = municipalities.length;
-  gameState.currentTarget = gameState.remainingMunicipalities[0];
-  gameState.running = true;
-  startTimer();
   const startBtn = document.getElementById("start-game-btn");
-  if (startBtn) startBtn.disabled = true;
+  gameState.starting = true;
 
   if (loadedGeoJsonPath === geoJsonPath && geoJsonLayer && basemapLayer) {
     geoJsonLayer.eachLayer((layer) => layer.unbindTooltip());
@@ -143,21 +155,67 @@ async function startGame(provinceName) {
     fitMapToProvince(geoJsonLayer.getBounds(), { padding: [20, 20] });
   } else {
     const loaded = await loadGeoJsonMap(geoJsonPath);
+    if (sessionId !== gameSessionId) return;
     if (!loaded) {
+      gameState.starting = false;
       resetRuntimeState();
       if (startBtn) startBtn.disabled = false;
       return;
     }
   }
 
+  if (sessionId !== gameSessionId) return;
+  gameState.starting = false;
+
+  const targets = [];
+  if (isCountryGame) {
+    geoJsonLayer.eachLayer((layer) => {
+      const feature = layer.feature;
+      if (feature.properties?.border_type !== "municipality") return;
+      targets.push({
+        name: getFeatureName(feature),
+        id: feature.properties.ekatte,
+        code: feature.properties.ekatte,
+      });
+    });
+  } else {
+    targets.push(...municipalities.map((name) => ({ name })));
+  }
+
+  if (targets.length !== (isCountryGame ? 265 : municipalities.length)) {
+    setStatus(isCountryGame
+      ? `Картата трябва да съдържа 265 общини, но съдържа ${targets.length}.`
+      : "Не бяха намерени общини за избраната област.");
+    setPrompt("Провери GeoJSON данните и опитай отново.");
+    return;
+  }
+
+  const nameCounts = new Map();
+  targets.forEach(({ name }) => nameCounts.set(name, (nameCounts.get(name) || 0) + 1));
+  targets.forEach((target) => {
+    target.label = nameCounts.get(target.name) > 1 ? `${target.name} (${target.code})` : target.name;
+  });
+  gameState.remainingMunicipalities = shuffleArray(targets);
+  gameState.totalMunicipalities = targets.length;
+  gameState.currentTarget = gameState.remainingMunicipalities[0];
+  gameState.running = true;
+  startTimer();
+
   if (startBtn) {
     startBtn.disabled = false;
     startBtn.textContent = "Пауза";
   }
 
-  setPrompt(`Къде е община ${gameState.currentTarget}?`);
+  setPrompt(`Къде е община ${gameState.currentTarget.label}?`);
   setStatus(`Открий всички ${gameState.totalMunicipalities} общини.`);
   updateScore();
+}
+
+function getGameGeoJsonPath(provinceName) {
+  if (provinceName === window.BULGARIA_GAME_VALUE) return COUNTRY_GEOJSON_PATH;
+  return typeof window.getProvinceGeoJsonPath === "function"
+    ? window.getProvinceGeoJsonPath(provinceName)
+    : null;
 }
 
 async function loadGeoJsonMap(geoJsonPath) {
@@ -260,8 +318,7 @@ function getFeatureName(feature, fallbackIndex) {
 // Mask is generated by Turf.js directly inside loadGeoJsonMap now
 
 function getFeatureStyle(feature) {
-  const name = getFeatureName(feature);
-  const isSolved = Array.from(gameState.solvedTargets).some(target => isPathMatchingTarget(name, target));
+  const isSolved = isFeatureSolved(feature);
   if (isSolved) {
     return {
       fillColor: '#6fb783',
@@ -290,8 +347,7 @@ function onEachFeature(feature, layer) {
 
 function highlightFeature(e) {
   const layer = e.target;
-  const name = getFeatureName(layer.feature);
-  const isSolved = Array.from(gameState.solvedTargets).some(target => isPathMatchingTarget(name, target));
+  const isSolved = isFeatureSolved(layer.feature);
 
   if (isSolved || !gameState.running) return;
 
@@ -309,8 +365,7 @@ function highlightFeature(e) {
 
 function resetHighlight(e) {
   const layer = e.target;
-  const name = getFeatureName(layer.feature);
-  const isSolved = Array.from(gameState.solvedTargets).some(target => isPathMatchingTarget(name, target));
+  const isSolved = isFeatureSolved(layer.feature);
 
   if (isSolved) return;
 
@@ -324,19 +379,21 @@ function onFeatureClick(e) {
 
   const layer = e.target;
   const name = getFeatureName(layer.feature);
-  const isSolved = Array.from(gameState.solvedTargets).some(target => isPathMatchingTarget(name, target));
+  const isSolved = isFeatureSolved(layer.feature);
 
   if (isSolved) return;
 
   const target = gameState.currentTarget;
-  const isCorrect = isPathMatchingTarget(name, target);
+  const isCorrect = target.id
+    ? layer.feature.properties?.ekatte === target.id
+    : isPathMatchingTarget(name, target.name);
 
   if (isCorrect) {
     gameState.points += 1;
     updateScore();
     setGameFeedback("Правилно!", true);
-    setStatus(`Вярно! ${target}`);
-    layer.bindTooltip(target, {
+    setStatus(`Вярно! ${target.name}`);
+    layer.bindTooltip(target.name, {
       permanent: true,
       direction: "center",
       className: "municipality-label",
@@ -387,14 +444,25 @@ function isPathMatchingTarget(pathId, municipalityName) {
 
 
 function markCurrentMunicipalitySolved() {
-  gameState.solvedTargets.add(gameState.currentTarget);
+  gameState.solvedTargets.add(getTargetKey(gameState.currentTarget));
   gameState.remainingMunicipalities = gameState.remainingMunicipalities.slice(1);
   if (gameState.remainingMunicipalities.length === 0) {
     finishGame();
     return;
   }
   gameState.currentTarget = gameState.remainingMunicipalities[0];
-  setPrompt(`Къде е община ${gameState.currentTarget}?`);
+  setPrompt(`Къде е община ${gameState.currentTarget.label}?`);
+}
+
+function getTargetKey(target) {
+  return target.id || target.name;
+}
+
+function isFeatureSolved(feature) {
+  const featureKey = gameState.selectedProvince === window.BULGARIA_GAME_VALUE
+    ? feature.properties?.ekatte
+    : getFeatureName(feature);
+  return gameState.solvedTargets.has(featureKey);
 }
 
 function transliterateBgToLatin(text) {
@@ -457,6 +525,7 @@ function resetRuntimeState() {
   stopTimer();
   gameState.running = false;
   gameState.paused = false;
+  gameState.starting = false;
   gameState.startTimestamp = 0;
   gameState.elapsedMs = 0;
   gameState.timerStarted = false;
@@ -464,12 +533,38 @@ function resetRuntimeState() {
   gameState.errors = 0;
   gameState.totalMunicipalities = 0;
   gameState.remainingMunicipalities = [];
-  gameState.currentTarget = "";
+  gameState.currentTarget = null;
   gameState.solvedTargets.clear();
   setTimerDisplay(0);
   updateScore();
   updateErrorCount();
   setGameFeedback("");
+}
+
+let gameSessionId = 0;
+
+function abortGame() {
+  if (!gameState.running && !gameState.paused && !gameState.starting) return;
+
+  gameSessionId += 1;
+  resetRuntimeState();
+  if (geoJsonLayer) {
+    geoJsonLayer.eachLayer((layer) => layer.unbindTooltip());
+    geoJsonLayer.setStyle(getFeatureStyle);
+  }
+
+  const startBtn = document.getElementById("start-game-btn");
+  const restartBtn = document.getElementById("restart-game-btn");
+  if (startBtn) {
+    startBtn.disabled = !gameState.selectedProvince;
+    startBtn.textContent = "Старт";
+  }
+  if (restartBtn) restartBtn.disabled = !gameState.selectedProvince;
+
+  setPrompt(gameState.selectedProvince === window.BULGARIA_GAME_VALUE
+    ? "Натисни „Старт“, за да играеш за цяла България."
+    : "Избери област и натисни „Старт“.");
+  setStatus("Играта е прекратена.");
 }
 
 function resetGameDisplay() {

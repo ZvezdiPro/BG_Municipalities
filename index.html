@@ -23,14 +23,22 @@
 
       <main class="main-content">
         <section id="learn-section" class="page-section" aria-labelledby="learn-heading">
+          <div class="card learn-country-card">
+            <h2 id="municipality-map-heading">Общините на България</h2>
+            <p id="learn-municipality-name" class="learn-municipality-name" aria-live="polite">
+              Избери община на картата.
+            </p>
+            <div id="learn-map-container" class="svg-container interactive-map-container" aria-labelledby="municipality-map-heading">
+              <p class="placeholder">Картата се зарежда...</p>
+            </div>
+          </div>
           <div class="learn-layout">
             <div class="card controls-card">
-              <h2 id="learn-heading">Научи</h2>
+              <h2 id="learn-heading">Научи по области</h2>
               <label for="province-select">Избери област:</label>
               <select id="province-select">
                 <option value="">-- Избери област --</option>
               </select>
-              <p class="hint">Ще се покаже изображение с етикети от папка <code>assets/labels</code>.</p>
             </div>
 
             <div class="card image-card">
@@ -45,9 +53,10 @@
           <div class="game-layout">
             <div class="card controls-card">
               <h2 id="game-heading">Играй</h2>
-              <label for="game-province-select">Избери област:</label>
+              <label for="game-province-select">Режим на игра:</label>
               <select id="game-province-select">
-                <option value="">-- Избери област --</option>
+                <option value="__bulgaria__" selected>България — всички 265 общини</option>
+                <option value="">-- или избери област --</option>
               </select>
               <div class="game-actions">
                 <button id="start-game-btn" class="action-btn">Старт</button>
@@ -60,7 +69,7 @@
                 </div>
                 <div class="score-card">
                   <span class="stat-label">ОТКРИТИ</span>
-                  <p id="game-score" class="status-text">0 / 0</p>
+                  <p id="game-score" class="status-text">0 / 265</p>
                 </div>
                 <div class="error-card">
                   <span class="stat-label">ГРЕШКИ</span>
@@ -69,16 +78,16 @@
               </div>
               <div class="prompt-card" aria-live="polite">
                 <span class="stat-label">НАМЕРИ ОБЩИНА</span>
-                <p id="game-prompt" class="game-prompt">Избери област и натисни „Старт“.</p>
+                <p id="game-prompt" class="game-prompt">Натисни „Старт“, за да играеш за цяла България.</p>
               </div>
               <p class="hint">Кликни върху правилната община в картата.</p>
-              <p id="game-status" class="status-text">Готов за начало.</p>
+              <p id="game-status" class="status-text">Готов за начало — 265 общини.</p>
             </div>
 
             <div class="card map-card">
               <p id="game-feedback" class="game-feedback" aria-live="polite"></p>
               <div id="map-container" class="svg-container">
-                <p class="placeholder">Избери област и натисни "Старт".</p>
+                <p class="placeholder">Натисни „Старт“, за да започнеш играта за България.</p>
               </div>
             </div>
           </div>

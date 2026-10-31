@@ -3,6 +3,7 @@
 import json
 import math
 import os
+import sys
 import tempfile
 import time
 import urllib.error
@@ -15,6 +16,7 @@ import rasterio
 from rasterio.io import MemoryFile
 from rasterio.features import rasterize
 from rasterio.transform import from_bounds
+from rasterio.warp import Resampling, reproject
 from pyproj import Transformer
 from shapely.geometry import shape
 from shapely.ops import transform as transform_geometry
@@ -31,6 +33,7 @@ TILE_URL = (
 EARTH_RADIUS = 6_378_137
 WORLD_WIDTH = 2 * math.pi * EARTH_RADIUS
 TARGET_PIXELS = 1400
+COUNTRY_TARGET_PIXELS = TARGET_PIXELS * 2
 MAX_ZOOM = 13
 WGS84_TO_MERCATOR = Transformer.from_crs("EPSG:4326", "EPSG:3857", always_xy=True)
 
@@ -69,12 +72,12 @@ def province_extent(path):
     return west, south, east, north
 
 
-def image_tiles(extent):
+def image_tiles(extent, target_pixels=TARGET_PIXELS):
     west, south, east, north = extent
     largest_dimension = max(east - west, north - south)
     zoom = min(
         MAX_ZOOM,
-        max(8, math.ceil(math.log2(TARGET_PIXELS * WORLD_WIDTH / (256 * largest_dimension)))),
+        max(8, math.ceil(math.log2(target_pixels * WORLD_WIDTH / (256 * largest_dimension)))),
     )
     resolution = WORLD_WIDTH / (256 * (2**zoom))
     half_world = WORLD_WIDTH / 2
@@ -126,8 +129,29 @@ def read_tile(path):
     return image[:3]
 
 
-def write_province_image(path, extent, tile_paths):
-    zoom, _, pixel_bounds, required_tiles = image_tiles(extent)
+def read_relief_tile(tile_id, path):
+    image = read_tile(path)
+    if not (
+        np.array_equal(image, np.broadcast_to(image[:, :1, :1], image.shape))
+        and image[:, 0, 0].max() < 80
+    ):
+        return image
+
+    zoom, tile_x, tile_y = tile_id
+    if zoom <= 8:
+        raise ValueError(f"No shaded-relief data in tile {tile_id} or its parent tiles.")
+
+    parent_id = (zoom - 1, tile_x // 2, tile_y // 2)
+    parent_path = download_tile(parent_id)[1]
+    parent_image = read_relief_tile(parent_id, parent_path)
+    left = (tile_x % 2) * 128
+    top = (tile_y % 2) * 128
+    child_image = parent_image[:, top : top + 128, left : left + 128]
+    return np.repeat(np.repeat(child_image, 2, axis=1), 2, axis=2)
+
+
+def write_province_image(path, extent, tile_paths, target_pixels=TARGET_PIXELS):
+    zoom, resolution, pixel_bounds, required_tiles = image_tiles(extent, target_pixels)
     left, top, right, bottom = pixel_bounds
     tile_columns = [tile_x for _, tile_x, _ in required_tiles]
     tile_rows = [tile_y for _, _, tile_y in required_tiles]
@@ -143,13 +167,33 @@ def write_province_image(path, extent, tile_paths):
             :,
             (tile_y - first_row) * 256 : (tile_y - first_row + 1) * 256,
             (tile_x - first_column) * 256 : (tile_x - first_column + 1) * 256,
-        ] = read_tile(tile_paths[tile_id])
+        ] = read_relief_tile(tile_id, tile_paths[tile_id])
 
     image = mosaic[
         :,
         top - first_row * 256 : bottom - first_row * 256,
         left - first_column * 256 : right - first_column * 256,
     ]
+    west, south, east, north = extent
+    half_world = WORLD_WIDTH / 2
+    pixel_grid_extent = (
+        left * resolution - half_world,
+        half_world - bottom * resolution,
+        right * resolution - half_world,
+        half_world - top * resolution,
+    )
+    aligned_image = np.empty_like(image)
+    reproject(
+        source=image,
+        destination=aligned_image,
+        src_transform=from_bounds(*pixel_grid_extent, image.shape[2], image.shape[1]),
+        src_crs="EPSG:3857",
+        dst_transform=from_bounds(west, south, east, north, image.shape[2], image.shape[1]),
+        dst_crs="EPSG:3857",
+        resampling=Resampling.bilinear,
+    )
+    image = aligned_image
+
     geojson = json.loads((GEO_DIR / f"{path.stem}.geojson").read_text(encoding="utf-8"))
     province_shapes = [
         (
@@ -158,7 +202,6 @@ def write_province_image(path, extent, tile_paths):
         )
         for feature in geojson.get("features", [])
     ]
-    west, south, east, north = extent
     province_mask = rasterize(
         province_shapes,
         out_shape=(image.shape[1], image.shape[2]),
@@ -187,10 +230,16 @@ def write_province_image(path, extent, tile_paths):
 def main():
     provinces = []
     required_tiles = set()
-    for geojson_path in sorted(GEO_DIR.glob("*.geojson")):
+    geojson_paths = sorted(GEO_DIR.glob("*.geojson"))
+    if sys.argv[1:] == ["--country-only"]:
+        geojson_paths = [GEO_DIR / "bulgaria.geojson"]
+    for geojson_path in geojson_paths:
+        if not geojson_path.exists():
+            raise FileNotFoundError(f"Generate {geojson_path.name} before its basemap.")
         extent = province_extent(geojson_path)
-        zoom, _, _, tile_ids = image_tiles(extent)
-        provinces.append((geojson_path, extent, zoom))
+        target_pixels = COUNTRY_TARGET_PIXELS if geojson_path.stem == "bulgaria" else TARGET_PIXELS
+        zoom, _, _, tile_ids = image_tiles(extent, target_pixels)
+        provinces.append((geojson_path, extent, zoom, target_pixels))
         required_tiles.update(tile_ids)
 
     CACHE_DIR.mkdir(parents=True, exist_ok=True)
@@ -198,10 +247,10 @@ def main():
     with ThreadPoolExecutor(max_workers=8) as executor:
         tile_paths = dict(executor.map(download_tile, required_tiles))
 
-    print(f"Generating {len(provinces)} province basemaps...")
-    for geojson_path, extent, _ in provinces:
+    print(f"Generating {len(provinces)} basemaps...")
+    for geojson_path, extent, _, target_pixels in provinces:
         output_path = OUTPUT_DIR / f"{geojson_path.stem}.jpg"
-        zoom, width, height = write_province_image(output_path, extent, tile_paths)
+        zoom, width, height = write_province_image(output_path, extent, tile_paths, target_pixels)
         print(f"{output_path.name}: zoom {zoom}, {width}x{height}")
 
 
