@@ -18,6 +18,7 @@ const gameState = {
 let map = null;
 let geoJsonLayer = null;
 let basemapLayer = null;
+let provinceBoundariesLayer = null;
 let loadedGeoJsonPath = null;
 const MIN_MAP_ZOOM = 1;
 const COUNTRY_GEOJSON_PATH = "assets/geo/bulgaria.geojson";
@@ -30,6 +31,25 @@ function setupGameControls() {
   const startBtn = document.getElementById("start-game-btn");
   const restartBtn = document.getElementById("restart-game-btn");
   const provinceSelect = document.getElementById("game-province-select");
+
+  window.addEventListener("basemapchange", () => {
+    if (!map || !basemapLayer) return;
+    if (window.basemapEnabled) {
+      basemapLayer.addTo(map);
+      geoJsonLayer.bringToFront();
+    } else {
+      map.removeLayer(basemapLayer);
+    }
+  });
+
+  window.addEventListener("provinceboundarieschange", () => {
+    if (!map || !provinceBoundariesLayer) return;
+    if (window.provinceBoundariesEnabled) {
+      provinceBoundariesLayer.addTo(map);
+    } else {
+      map.removeLayer(provinceBoundariesLayer);
+    }
+  });
 
   gameState.selectedProvince = provinceSelect.value;
   if (startBtn && provinceSelect) {
@@ -243,6 +263,10 @@ async function loadGeoJsonMap(geoJsonPath) {
         map.removeLayer(basemapLayer);
         basemapLayer = null;
       }
+      if (provinceBoundariesLayer) {
+        map.removeLayer(provinceBoundariesLayer);
+        provinceBoundariesLayer = null;
+      }
       loadedGeoJsonPath = null;
       map.setMaxBounds(null);
       map.invalidateSize();
@@ -273,9 +297,13 @@ async function loadGeoJsonMap(geoJsonPath) {
     basemapLayer = L.imageOverlay(basemapPath, geoJsonLayer.getBounds(), {
       attribution: "Terrain basemap &copy; Esri",
       interactive: false,
-    }).addTo(map);
+    });
+    if (window.basemapEnabled) basemapLayer.addTo(map);
 
     geoJsonLayer.addTo(map);
+    if (geoJsonPath === COUNTRY_GEOJSON_PATH) {
+      provinceBoundariesLayer = await window.addProvinceBoundariesLayer(map);
+    }
 
     // Auto-zoom to fit the selected province
     const provinceBounds = geoJsonLayer.getBounds();
@@ -585,6 +613,10 @@ function resetGameDisplay() {
   if (basemapLayer && map) {
     map.removeLayer(basemapLayer);
     basemapLayer = null;
+  }
+  if (provinceBoundariesLayer && map) {
+    map.removeLayer(provinceBoundariesLayer);
+    provinceBoundariesLayer = null;
   }
   loadedGeoJsonPath = null;
 

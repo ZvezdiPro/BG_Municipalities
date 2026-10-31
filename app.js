@@ -182,8 +182,17 @@ const state = {
   selectedProvinceLearn: "",
 };
 
+const BASEMAP_STORAGE_KEY = "bg-municipalities-basemap-enabled";
+const PROVINCE_BOUNDARIES_STORAGE_KEY = "bg-municipalities-province-boundaries-enabled";
+const PROVINCE_BOUNDARIES_PATH = "assets/geo/provinces.geojson";
+window.basemapEnabled = localStorage.getItem(BASEMAP_STORAGE_KEY) !== "false";
+window.provinceBoundariesEnabled = localStorage.getItem(PROVINCE_BOUNDARIES_STORAGE_KEY) !== "false";
+
 let learnMap = null;
 let learnGeoJsonLayer = null;
+let learnBasemapLayer = null;
+let learnProvinceBoundariesLayer = null;
+let provinceBoundariesPromise = null;
 let selectedLearnMunicipality = null;
 let learnMapLoadPromise = null;
 let learnMunicipalityNameCounts = new Map();
@@ -193,14 +202,108 @@ window.PROVINCE_DATA = PROVINCE_DATA;
 window.findProvinceAssetsByName = findProvinceAssetsByName;
 window.getProvinceGeoJsonPath = getProvinceGeoJsonPath;
 window.getProvinceRecordKeys = getProvinceRecordKeys;
+window.addProvinceBoundariesLayer = addProvinceBoundariesLayer;
 
 document.addEventListener("DOMContentLoaded", () => {
   validateLabelMappings();
   setupNavigation();
+  setupBasemapControls();
   populateProvinceSelects();
   setupLearnSection();
   renderBestRecord();
 });
+
+function setupBasemapControls() {
+  const basemapControls = [
+    document.getElementById("learn-basemap-toggle"),
+    document.getElementById("game-basemap-toggle"),
+  ];
+
+  basemapControls.forEach((control) => {
+    control.checked = window.basemapEnabled;
+    control.addEventListener("change", () => {
+      window.basemapEnabled = control.checked;
+      localStorage.setItem(BASEMAP_STORAGE_KEY, String(window.basemapEnabled));
+      basemapControls.forEach((otherControl) => {
+        otherControl.checked = window.basemapEnabled;
+      });
+      window.dispatchEvent(new Event("basemapchange"));
+    });
+  });
+
+  window.addEventListener("basemapchange", () => {
+    if (!learnMap || !learnBasemapLayer) return;
+    if (window.basemapEnabled) {
+      learnBasemapLayer.addTo(learnMap);
+      learnGeoJsonLayer.bringToFront();
+    } else {
+      learnMap.removeLayer(learnBasemapLayer);
+    }
+  });
+
+  const boundaryControls = [
+    document.getElementById("learn-province-boundaries-toggle"),
+    document.getElementById("game-province-boundaries-toggle"),
+  ];
+
+  boundaryControls.forEach((control) => {
+    control.checked = window.provinceBoundariesEnabled;
+    control.addEventListener("change", () => {
+      window.provinceBoundariesEnabled = control.checked;
+      localStorage.setItem(PROVINCE_BOUNDARIES_STORAGE_KEY, String(window.provinceBoundariesEnabled));
+      boundaryControls.forEach((otherControl) => {
+        otherControl.checked = window.provinceBoundariesEnabled;
+      });
+      window.dispatchEvent(new Event("provinceboundarieschange"));
+    });
+  });
+
+  window.addEventListener("provinceboundarieschange", () => {
+    if (!learnMap || !learnProvinceBoundariesLayer) return;
+    if (window.provinceBoundariesEnabled) {
+      learnProvinceBoundariesLayer.addTo(learnMap);
+    } else {
+      learnMap.removeLayer(learnProvinceBoundariesLayer);
+    }
+  });
+}
+
+async function addProvinceBoundariesLayer(map) {
+  if (!provinceBoundariesPromise) {
+    provinceBoundariesPromise = fetch(PROVINCE_BOUNDARIES_PATH, { cache: "no-store" })
+      .then((response) => {
+        if (!response.ok) throw new Error(`Грешка при зареждане на границите на областите (${response.status})`);
+        return response.json();
+      })
+      .then((geoJson) => {
+        if (!Array.isArray(geoJson.features) || geoJson.features.length !== 28) {
+          throw new Error("Очакват се границите на 28 области.");
+        }
+        return geoJson;
+      })
+      .catch((error) => {
+        provinceBoundariesPromise = null;
+        throw error;
+      });
+  }
+
+  const geoJson = await provinceBoundariesPromise;
+  if (!map.getPane("provinceBoundaries")) {
+    map.createPane("provinceBoundaries").style.zIndex = "640";
+  }
+  const layer = L.geoJSON(geoJson, {
+    pane: "provinceBoundaries",
+    interactive: false,
+    style: {
+      color: "#315b43",
+      opacity: 0.95,
+      weight: 1.75,
+      fill: false,
+    },
+  });
+  if (window.provinceBoundariesEnabled) layer.addTo(map);
+  return layer;
+}
 
 function setupNavigation() {
   const buttons = Array.from(document.querySelectorAll(".nav-btn"));
@@ -209,6 +312,11 @@ function setupNavigation() {
   buttons.forEach((btn) => {
     btn.addEventListener("click", () => {
       const target = btn.dataset.target;
+      if (target !== "learn-section" &&
+          document.querySelector('.nav-btn.is-active')?.dataset.target === "learn-section") {
+        resetLearnSection();
+      }
+
       buttons.forEach((b) => b.classList.remove("is-active"));
       btn.classList.add("is-active");
 
@@ -233,6 +341,24 @@ function setupNavigation() {
       }
     });
   });
+}
+
+function resetLearnSection() {
+  const select = document.getElementById("province-select");
+  select.value = "";
+  state.selectedProvinceLearn = "";
+  renderLabelImage("", document.getElementById("label-image-container"));
+
+  if (selectedLearnMunicipality && learnGeoJsonLayer) {
+    selectedLearnMunicipality.unbindTooltip();
+    learnGeoJsonLayer.resetStyle(selectedLearnMunicipality);
+    selectedLearnMunicipality = null;
+  }
+  document.getElementById("learn-municipality-name").textContent = "Избери община на картата.";
+
+  if (learnMap && learnGeoJsonLayer) {
+    fitLearnMapToCountry();
+  }
 }
 
 function populateProvinceSelects() {
@@ -307,10 +433,12 @@ async function loadLearnMunicipalityMap(container) {
       if (basemapImage.complete && basemapImage.naturalWidth > 0) resolve();
     });
 
-    L.imageOverlay(basemapPath, learnGeoJsonLayer.getBounds(), {
+    learnBasemapLayer = L.imageOverlay(basemapPath, learnGeoJsonLayer.getBounds(), {
       attribution: "Terrain basemap &copy; Esri",
       interactive: false,
-    }).addTo(learnMap);
+    });
+    if (window.basemapEnabled) learnBasemapLayer.addTo(learnMap);
+    learnProvinceBoundariesLayer = await addProvinceBoundariesLayer(learnMap);
     learnGeoJsonLayer.bringToFront();
     learnGeoJsonLayer.eachLayer((layer) => {
       const path = layer.getElement();

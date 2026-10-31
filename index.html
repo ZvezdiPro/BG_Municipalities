@@ -25,9 +25,19 @@
         <section id="learn-section" class="page-section" aria-labelledby="learn-heading">
           <div class="card learn-country-card">
             <h2 id="municipality-map-heading">Общините на България</h2>
-            <p id="learn-municipality-name" class="learn-municipality-name" aria-live="polite">
-              Избери община на картата.
-            </p>
+            <div class="map-toolbar learn-map-toolbar">
+              <p id="learn-municipality-name" class="learn-municipality-name" aria-live="polite">
+                Избери община на картата.
+              </p>
+              <label class="basemap-toggle" for="learn-basemap-toggle">
+                Базова карта
+                <input id="learn-basemap-toggle" class="switch-input" type="checkbox" role="switch" />
+              </label>
+              <label class="province-boundaries-toggle" for="learn-province-boundaries-toggle">
+                Граници на областите
+                <input id="learn-province-boundaries-toggle" class="switch-input" type="checkbox" role="switch" />
+              </label>
+            </div>
             <div id="learn-map-container" class="svg-container interactive-map-container" aria-labelledby="municipality-map-heading">
               <p class="placeholder">Картата се зарежда...</p>
             </div>
@@ -85,7 +95,17 @@
             </div>
 
             <div class="card map-card">
-              <p id="game-feedback" class="game-feedback" aria-live="polite"></p>
+              <div class="map-toolbar">
+                <p id="game-feedback" class="game-feedback" aria-live="polite"></p>
+                <label class="basemap-toggle" for="game-basemap-toggle">
+                  Базова карта
+                  <input id="game-basemap-toggle" class="switch-input" type="checkbox" role="switch" />
+                </label>
+                <label class="province-boundaries-toggle" for="game-province-boundaries-toggle">
+                  Граници на областите
+                  <input id="game-province-boundaries-toggle" class="switch-input" type="checkbox" role="switch" />
+                </label>
+              </div>
               <div id="map-container" class="svg-container">
                 <p class="placeholder">Натисни „Старт“, за да започнеш играта за България.</p>
               </div>
