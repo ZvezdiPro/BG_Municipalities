@@ -681,10 +681,17 @@ function saveBestRecord(timeMs) {
 
   const keys = window.getProvinceRecordKeys(gameState.selectedProvince);
   const currentBestMs = Number.parseInt(localStorage.getItem(keys.milliseconds), 10);
+  const currentBestErrors = Number.parseInt(localStorage.getItem(keys.errors), 10);
+
   if (!Number.isFinite(currentBestMs) || timeMs < currentBestMs) {
     localStorage.setItem(keys.milliseconds, String(Math.floor(timeMs)));
     localStorage.setItem(keys.time, formatTime(timeMs));
   }
+
+  if (!Number.isFinite(currentBestErrors) || gameState.errors < currentBestErrors) {
+    localStorage.setItem(keys.errors, String(gameState.errors));
+  }
+
   if (typeof window.renderBestRecord === "function") {
     window.renderBestRecord();
   }

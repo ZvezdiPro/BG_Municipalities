@@ -244,7 +244,14 @@ function setupBasemapControls() {
   const boundaryControls = [
     document.getElementById("learn-province-boundaries-toggle"),
     document.getElementById("game-province-boundaries-toggle"),
-  ];
+  ].filter(Boolean);
+  const gameProvinceSelect = document.getElementById("game-province-select");
+  const gameBoundaryControl = document.getElementById("game-province-boundaries-control");
+  const updateGameBoundaryControl = () => {
+    gameBoundaryControl.hidden = gameProvinceSelect.value !== window.BULGARIA_GAME_VALUE;
+  };
+  updateGameBoundaryControl();
+  gameProvinceSelect.addEventListener("change", updateGameBoundaryControl);
 
   boundaryControls.forEach((control) => {
     control.checked = window.provinceBoundariesEnabled;
@@ -632,22 +639,28 @@ function renderBestRecord() {
       const row = document.createElement("tr");
       const provinceCell = document.createElement("td");
       const recordCell = document.createElement("td");
+      const errorsCell = document.createElement("td");
       const keys = getProvinceRecordKeys(provinceName);
 
       provinceCell.textContent = provinceName;
       recordCell.textContent = localStorage.getItem(keys.time) || "Няма запис";
-      row.append(provinceCell, recordCell);
+      const savedErrors = localStorage.getItem(keys.errors);
+      errorsCell.textContent = savedErrors !== null ? savedErrors : "Няма запис";
+      row.append(provinceCell, recordCell, errorsCell);
       recordsBody.append(row);
     });
 
   const countryRow = document.createElement("tr");
   const countryCell = document.createElement("td");
   const countryRecordCell = document.createElement("td");
+  const countryErrorsCell = document.createElement("td");
   const countryKeys = getProvinceRecordKeys(window.BULGARIA_GAME_VALUE);
 
   countryCell.textContent = "България (265 общини)";
   countryRecordCell.textContent = localStorage.getItem(countryKeys.time) || "Няма запис";
-  countryRow.append(countryCell, countryRecordCell);
+  const countrySavedErrors = localStorage.getItem(countryKeys.errors);
+  countryErrorsCell.textContent = countrySavedErrors !== null ? countrySavedErrors : "Няма запис";
+  countryRow.append(countryCell, countryRecordCell, countryErrorsCell);
   recordsBody.append(countryRow);
 }
 
@@ -656,6 +669,7 @@ function getProvinceRecordKeys(provinceName) {
   return {
     time: provinceKey,
     milliseconds: `${provinceKey} (ms)`,
+    errors: `${provinceKey} (errors)`,
   };
 }
 

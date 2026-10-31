@@ -371,6 +371,10 @@ select:focus-visible,
   cursor: pointer;
 }
 
+.province-boundaries-toggle[hidden] {
+  display: none;
+}
+
 .switch-input {
   width: 2.2rem;
   height: 1.2rem;
