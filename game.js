@@ -378,14 +378,25 @@ function highlightFeature(e) {
   const layer = e.target;
   const isSolved = isFeatureSolved(layer.feature);
 
-  if (isSolved || !gameState.running) return;
+  if (isSolved) return;
 
-  layer.setStyle({
-    fillColor: '#fff4b3',
-    fillOpacity: 0.6,
-    color: '#8dcf9b',
-    weight: 2.5
-  });
+  if (gameState.running) {
+    layer.setStyle({
+      fillColor: '#fff4b3',
+      fillOpacity: 0.6,
+      color: '#8dcf9b',
+      weight: 2.5
+    });
+  } else if (!gameState.paused && !gameState.starting) {
+    layer.setStyle({
+      fillColor: '#d3dfd5',
+      fillOpacity: 0.7,
+      color: '#476b53',
+      weight: 2.5
+    });
+  } else {
+    return;
+  }
 
   if (!L.Browser.ie && !L.Browser.opera && !L.Browser.edge) {
     layer.bringToFront();

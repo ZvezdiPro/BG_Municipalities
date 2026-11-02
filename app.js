@@ -208,7 +208,7 @@ const customBasemapManagers = new Map();
 const customBasemapDataCache = new Map();
 let selectedLearnMunicipality = null;
 let learnMapLoadPromise = null;
-let learnMunicipalityNameCounts = new Map();
+let learnMunicipalityStatisticsPromise = null;
 
 window.PROVINCE_ASSETS = PROVINCE_ASSETS;
 window.PROVINCE_DATA = PROVINCE_DATA;
@@ -282,10 +282,10 @@ function getCustomBasemapData(path) {
 
 function getCustomBasemapStyle(layerName, feature, zoom) {
   if (layerName === "rivers") {
-    if (zoom <= 6) return { color: "#2387bd", opacity: 0.35, weight: 1.1 };
-    if (zoom <= 7) return { color: "#2387bd", opacity: 0.55, weight: 1.5 };
-    if (zoom <= 8) return { color: "#2387bd", opacity: 0.75, weight: 1.8 };
-    return { color: "#2387bd", opacity: 0.9, weight: 2.2 };
+    if (zoom <= 6) return { color: "#2387bd", opacity: 0.15, weight: 1.1 };
+    if (zoom <= 7) return { color: "#2387bd", opacity: 0.25, weight: 1.5 };
+    if (zoom <= 8) return { color: "#2387bd", opacity: 0.4, weight: 1.8 };
+    return { color: "#2387bd", opacity: 0.55, weight: 2.2 };
   }
   if (layerName === "railways") {
     const style = zoom <= 6
@@ -299,11 +299,11 @@ function getCustomBasemapStyle(layerName, feature, zoom) {
   }
 
   const roadStyles = {
-    0: { color: "#b34232", overview: [2.4, 0.68], regional: [3.2, 0.78], local: [3.8, 0.86], close: [4.6, 0.9] },
-    1: { color: "#d16d35", overview: [2, 0.64], regional: [2.7, 0.74], local: [3.2, 0.84], close: [3.8, 0.9] },
-    2: { color: "#d2a24d", overview: [1.6, 0.6], regional: [2.1, 0.7], local: [2.5, 0.8], close: [3.1, 0.9] },
-    3: { color: "#738276", local: [1.2, 0.5], close: [2.3, 0.75] },
-    7: { color: "#a5aaa4", local: [0.8, 0.25], close: [1.6, 0.7] },
+    0: { color: "#b34232", overview: [2.4, 0.55], regional: [3.2, 0.66], local: [3.8, 0.76], close: [4.6, 0.82] },
+    1: { color: "#d16d35", overview: [2, 0.52], regional: [2.7, 0.63], local: [3.2, 0.74], close: [3.8, 0.82] },
+    2: { color: "#d2a24d", overview: [1.6, 0.48], regional: [2.1, 0.59], local: [2.5, 0.7], close: [3.1, 0.82] },
+    3: { color: "#738276", local: [1.2, 0.4], close: [2.3, 0.65] },
+    7: { color: "#a5aaa4", local: [0.8, 0.2], close: [1.6, 0.55] },
   };
   const roadClass = Number(feature.properties?.RoadClass);
   const roadStyle = roadStyles[roadClass] || roadStyles[7];
@@ -507,16 +507,18 @@ async function addProvinceBoundariesLayer(map) {
   if (!map.getPane("provinceBoundaries")) {
     map.createPane("provinceBoundaries").style.zIndex = "640";
   }
+  const getProvinceBoundaryStyle = () => ({
+    color: "#315b43",
+    opacity: 0.95,
+    weight: map.getZoom() <= 6 ? 0.8 : 1.75,
+    fill: false,
+  });
   const layer = L.geoJSON(geoJson, {
     pane: "provinceBoundaries",
     interactive: false,
-    style: {
-      color: "#315b43",
-      opacity: 0.95,
-      weight: 1.75,
-      fill: false,
-    },
+    style: getProvinceBoundaryStyle,
   });
+  map.on("zoomend", () => layer.setStyle(getProvinceBoundaryStyle()));
   if (window.provinceBoundariesEnabled) layer.addTo(map);
   return layer;
 }
@@ -528,9 +530,13 @@ function setupNavigation() {
   buttons.forEach((btn) => {
     btn.addEventListener("click", () => {
       const target = btn.dataset.target;
-      if (target !== "learn-section" &&
-          document.querySelector('.nav-btn.is-active')?.dataset.target === "learn-section") {
-        resetLearnSection();
+      const activeTarget = document.querySelector(".nav-btn.is-active")?.dataset.target;
+      if (activeTarget !== target) {
+        if (activeTarget === "learn-section") {
+          resetLearnSection();
+        } else {
+          clearLearnMunicipalityInfo();
+        }
       }
 
       buttons.forEach((b) => b.classList.remove("is-active"));
@@ -560,6 +566,7 @@ function setupNavigation() {
 }
 
 function resetLearnSection() {
+  clearLearnMunicipalityInfo();
   const select = document.getElementById("province-select");
   select.value = "";
   state.selectedProvinceLearn = "";
@@ -575,6 +582,22 @@ function resetLearnSection() {
   if (learnMap && learnGeoJsonLayer) {
     fitLearnMapToCountry();
   }
+}
+
+function clearLearnMunicipalityInfo() {
+  document.getElementById("learn-municipality-prompt").hidden = false;
+  document.getElementById("learn-municipality-info").hidden = true;
+  document.getElementById("learn-municipality-info").setAttribute("aria-busy", "false");
+  [
+    "learn-municipality-info-title",
+    "learn-municipality-province",
+    "learn-municipality-area",
+    "learn-municipality-population",
+    "learn-municipality-info-status",
+    "learn-natural-increase-rate",
+  ].forEach((id) => {
+    document.getElementById(id).textContent = "";
+  });
 }
 
 function populateProvinceSelects() {
@@ -626,12 +649,6 @@ async function loadLearnMunicipalityMap(container) {
     if (features.length !== 265) {
       throw new Error(`Очакват се 265 общини, но са намерени ${features.length}.`);
     }
-
-    learnMunicipalityNameCounts = new Map();
-    features.forEach((feature) => {
-      const name = getLearnMunicipalityBaseName(feature);
-      learnMunicipalityNameCounts.set(name, (learnMunicipalityNameCounts.get(name) || 0) + 1);
-    });
 
     container.replaceChildren();
     learnMap = L.map(container, { fadeAnimation: false }).setView([42.7339, 25.4858], 6);
@@ -730,6 +747,99 @@ function selectLearnMunicipality(feature, layer) {
   }).openTooltip();
   layer.bringToFront();
   showLearnMunicipalityName(feature);
+  showLearnMunicipalityStatistics(feature);
+}
+
+function getLearnMunicipalityStatistics() {
+  if (!learnMunicipalityStatisticsPromise) {
+    learnMunicipalityStatisticsPromise = fetch("assets/data/municipality_statistics.json", { cache: "no-store" })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error(`Грешка при зареждане на статистиката (${response.status})`);
+        }
+        return response.json();
+      })
+      .then((statistics) => {
+        if (
+          !statistics ||
+          !statistics.years ||
+          !statistics.municipalities ||
+          !statistics.provinces ||
+          ![
+            statistics.years.area,
+            statistics.years.population,
+            statistics.years.naturalIncrease,
+          ].every(Number.isInteger)
+        ) {
+          throw new Error("Файлът със статистика има неочакван формат.");
+        }
+        return statistics;
+      })
+      .catch((error) => {
+        learnMunicipalityStatisticsPromise = null;
+        throw error;
+      });
+  }
+  return learnMunicipalityStatisticsPromise;
+}
+
+function showLearnMunicipalityStatistics(feature) {
+  const section = document.getElementById("learn-municipality-info");
+  const status = document.getElementById("learn-municipality-info-status");
+  const ekatte = feature.properties?.ekatte;
+  clearLearnMunicipalityInfo();
+  document.getElementById("learn-municipality-prompt").hidden = true;
+  section.hidden = false;
+  requestAnimationFrame(() => learnMap?.invalidateSize({ pan: false }));
+  section.setAttribute("aria-busy", "true");
+  document.getElementById("learn-municipality-info-title").textContent =
+    `Информация за община ${getLearnMunicipalityName(feature)}`;
+  status.textContent = "Статистиката се зарежда...";
+
+  if (!ekatte) {
+    section.setAttribute("aria-busy", "false");
+    status.textContent = "За тази община липсва код за свързване със статистиката на НСИ.";
+    return;
+  }
+
+  getLearnMunicipalityStatistics()
+    .then((statistics) => {
+      if (selectedLearnMunicipality?.feature.properties?.ekatte !== ekatte) return;
+      const municipality = statistics.municipalities[ekatte];
+      const province = municipality && statistics.provinces[municipality.provinceCode];
+      if (!municipality || !province || typeof province.name !== "string") {
+        throw new Error(`Липсват данни от НСИ за община с код ${ekatte}.`);
+      }
+      const displayedValues = [
+        municipality.areaKm2,
+        municipality.population,
+        municipality.naturalIncreaseRatePerThousand,
+      ];
+      if (!displayedValues.every(Number.isFinite)) {
+        throw new Error(`Статистическите данни за код ${ekatte} са невалидни.`);
+      }
+
+      document.getElementById("learn-municipality-area-label").textContent =
+        `Площ (км², ${statistics.years.area})`;
+      document.getElementById("learn-municipality-population-label").textContent =
+        `Население (31.12.${statistics.years.population})`;
+      document.getElementById("learn-natural-increase-label").textContent =
+        `Естествен прираст (‰, ${statistics.years.naturalIncrease})`;
+      document.getElementById("learn-municipality-province").textContent = province.name;
+      document.getElementById("learn-municipality-area").textContent =
+        `${new Intl.NumberFormat("bg-BG", { maximumFractionDigits: 2 }).format(municipality.areaKm2)} км²`;
+      document.getElementById("learn-municipality-population").textContent =
+        new Intl.NumberFormat("bg-BG").format(municipality.population);
+      document.getElementById("learn-natural-increase-rate").textContent =
+        `${new Intl.NumberFormat("bg-BG", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(municipality.naturalIncreaseRatePerThousand)}‰`;
+      status.textContent = "";
+      section.setAttribute("aria-busy", "false");
+    })
+    .catch((error) => {
+      if (selectedLearnMunicipality?.feature.properties?.ekatte !== ekatte) return;
+      status.textContent = `Статистическите данни не могат да бъдат заредени: ${error.message}`;
+      section.setAttribute("aria-busy", "false");
+    });
 }
 
 function getLearnMunicipalityBaseName(feature) {
@@ -738,11 +848,7 @@ function getLearnMunicipalityBaseName(feature) {
 }
 
 function getLearnMunicipalityName(feature) {
-  const name = getLearnMunicipalityBaseName(feature);
-  const properties = feature.properties || {};
-  return learnMunicipalityNameCounts.get(name) > 1 && properties.ekatte
-    ? `${name} (${properties.ekatte})`
-    : name;
+  return getLearnMunicipalityBaseName(feature);
 }
 
 function showLearnMunicipalityName(feature) {

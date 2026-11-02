@@ -44,8 +44,48 @@
               </div>
               <span class="custom-layer-status" data-custom-layer-status aria-live="polite"></span>
             </div>
-            <div id="learn-map-container" class="svg-container interactive-map-container" aria-labelledby="municipality-map-heading">
-              <p class="placeholder">Картата се зарежда...</p>
+            <div class="learn-map-info-layout">
+              <div id="learn-map-container" class="svg-container interactive-map-container" aria-labelledby="municipality-map-heading">
+                <p class="placeholder">Картата се зарежда...</p>
+              </div>
+              <aside id="learn-municipality-info-panel" class="learn-municipality-info-panel" aria-label="Информация за избраната община">
+                <section id="learn-municipality-prompt" class="card municipality-info municipality-info-prompt" aria-labelledby="learn-municipality-prompt-title">
+                  <h3 id="learn-municipality-prompt-title">Научи повече за общината</h3>
+                  <p class="municipality-info-note">Избери община на картата, за да видиш областта, площта, населението и естествения прираст.</p>
+                </section>
+                <section id="learn-municipality-info" class="card municipality-info" aria-labelledby="learn-municipality-info-title" aria-live="polite" aria-busy="false" hidden>
+                  <h3 id="learn-municipality-info-title"></h3>
+                  <p class="municipality-info-note">
+                    Площта и статистическите данни са за общината.
+                  </p>
+                  <dl class="municipality-stat-grid">
+                    <div class="municipality-stat">
+                      <dt>Област</dt>
+                      <dd id="learn-municipality-province"></dd>
+                    </div>
+                    <div class="municipality-stat">
+                      <dt id="learn-municipality-area-label">Площ (км², 2024)</dt>
+                      <dd id="learn-municipality-area"></dd>
+                    </div>
+                    <div class="municipality-stat">
+                      <dt id="learn-municipality-population-label">Население (31.12.2025)</dt>
+                      <dd id="learn-municipality-population"></dd>
+                    </div>
+                    <div class="municipality-stat">
+                      <dt id="learn-natural-increase-label">Естествен прираст (‰, 2025)</dt>
+                      <dd id="learn-natural-increase-rate"></dd>
+                    </div>
+                  </dl>
+                  <p id="learn-municipality-info-status" class="municipality-info-status" role="status"></p>
+                  <div class="municipality-info-sources">
+                    <strong>Източници:</strong>
+                    <a href="https://www.nsi.bg/en/publications/regions-districts-and-municipalities-in-the-republic-of-bulgaria-2024-9447" target="_blank" rel="noopener noreferrer">НСИ — площ</a>
+                    <a href="https://www.nsi.bg/en/statistical-data/206/651" target="_blank" rel="noopener noreferrer">НСИ — население</a>
+                    <a href="https://www.nsi.bg/en/statistical-data/206/645" target="_blank" rel="noopener noreferrer">НСИ — естествено движение</a>
+                    <a href="https://www.nsi.bg/en/statistical-data/206/647" target="_blank" rel="noopener noreferrer">НСИ — средногодишно население</a>
+                  </div>
+                </section>
+              </aside>
             </div>
           </div>
           <div class="learn-layout">
