@@ -272,6 +272,7 @@ async function loadGeoJsonMap(geoJsonPath) {
       map.invalidateSize();
     }
 
+    window.registerCustomBasemapLayers(map, geoJsonPath);
     const response = await fetch(geoJsonPath, { cache: "no-store" });
     if (!response.ok) throw new Error(`Грешка при зареждане (${response.status})`);
     const geoJson = await response.json();
@@ -601,6 +602,7 @@ function resetGameDisplay() {
   setStatus("Готов за начало.");
 
   if (map) {
+    window.clearCustomBasemapLayers(map);
     map.setMinZoom(MIN_MAP_ZOOM);
     map.setMaxBounds(null);
   }

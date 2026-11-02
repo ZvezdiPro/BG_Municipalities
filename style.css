@@ -375,6 +375,48 @@ select:focus-visible,
   display: none;
 }
 
+.custom-layer-controls {
+  display: inline-flex;
+  flex: 0 1 auto;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.custom-layer-btn {
+  min-height: 2rem;
+  padding: 0.25rem 0.6rem;
+  border: 1px solid #cbd8ce;
+  border-radius: 999px;
+  color: var(--text-muted);
+  background: #fff;
+  font-size: 0.8rem;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.custom-layer-btn:hover {
+  border-color: var(--accent-green);
+  color: var(--text-main);
+}
+
+.custom-layer-btn.is-active {
+  border-color: #237a52;
+  color: #fff;
+  background: #237a52;
+}
+
+.custom-layer-btn:focus-visible {
+  outline: 3px solid rgba(35, 122, 82, 0.24);
+  outline-offset: 2px;
+}
+
+.custom-layer-status {
+  flex-basis: 100%;
+  color: var(--text-muted);
+  font-size: 0.78rem;
+  text-align: right;
+}
+
 .switch-input {
   width: 2.2rem;
   height: 1.2rem;

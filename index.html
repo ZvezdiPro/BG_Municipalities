@@ -37,6 +37,12 @@
                 Граници на областите
                 <input id="learn-province-boundaries-toggle" class="switch-input" type="checkbox" role="switch" />
               </label>
+              <div class="custom-layer-controls" role="group" aria-label="Векторни слоеве">
+                <button class="custom-layer-btn" type="button" data-custom-layer="rivers" aria-pressed="false">Реки</button>
+                <button class="custom-layer-btn" type="button" data-custom-layer="roads" aria-pressed="false" title="Пътищата са оцветени според класа си">Пътища</button>
+                <button class="custom-layer-btn" type="button" data-custom-layer="railways" aria-pressed="false">Железници</button>
+              </div>
+              <span class="custom-layer-status" data-custom-layer-status aria-live="polite"></span>
             </div>
             <div id="learn-map-container" class="svg-container interactive-map-container" aria-labelledby="municipality-map-heading">
               <p class="placeholder">Картата се зарежда...</p>
@@ -105,6 +111,12 @@
                   Граници на областите
                   <input id="game-province-boundaries-toggle" class="switch-input" type="checkbox" role="switch" />
                 </label>
+                <div class="custom-layer-controls" role="group" aria-label="Векторни слоеве">
+                  <button class="custom-layer-btn" type="button" data-custom-layer="rivers" aria-pressed="false">Реки</button>
+                  <button class="custom-layer-btn" type="button" data-custom-layer="roads" aria-pressed="false" title="Пътищата са оцветени според класа си">Пътища</button>
+                  <button class="custom-layer-btn" type="button" data-custom-layer="railways" aria-pressed="false">Железници</button>
+                </div>
+                <span class="custom-layer-status" data-custom-layer-status aria-live="polite"></span>
               </div>
               <div id="map-container" class="svg-container">
                 <p class="placeholder">Натисни „Старт“, за да започнеш играта за България.</p>

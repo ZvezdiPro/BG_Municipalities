@@ -185,14 +185,27 @@ const state = {
 const BASEMAP_STORAGE_KEY = "bg-municipalities-basemap-enabled";
 const PROVINCE_BOUNDARIES_STORAGE_KEY = "bg-municipalities-province-boundaries-enabled";
 const PROVINCE_BOUNDARIES_PATH = "assets/geo/provinces.geojson";
+const CUSTOM_BASEMAP_LAYER_DEFINITIONS = {
+  rivers: { fileName: "rivers", label: "Реки" },
+  roads: { fileName: "roads", label: "Пътища" },
+  railways: { fileName: "railways", label: "Железници" },
+};
 window.basemapEnabled = localStorage.getItem(BASEMAP_STORAGE_KEY) !== "false";
 window.provinceBoundariesEnabled = localStorage.getItem(PROVINCE_BOUNDARIES_STORAGE_KEY) !== "false";
+window.customBasemapLayerState = Object.fromEntries(
+  Object.keys(CUSTOM_BASEMAP_LAYER_DEFINITIONS).map((layerName) => [
+    layerName,
+    localStorage.getItem(`bg-municipalities-layer-${layerName}`) === "true",
+  ])
+);
 
 let learnMap = null;
 let learnGeoJsonLayer = null;
 let learnBasemapLayer = null;
 let learnProvinceBoundariesLayer = null;
 let provinceBoundariesPromise = null;
+const customBasemapManagers = new Map();
+const customBasemapDataCache = new Map();
 let selectedLearnMunicipality = null;
 let learnMapLoadPromise = null;
 let learnMunicipalityNameCounts = new Map();
@@ -208,10 +221,206 @@ document.addEventListener("DOMContentLoaded", () => {
   validateLabelMappings();
   setupNavigation();
   setupBasemapControls();
+  setupCustomBasemapControls();
   populateProvinceSelects();
   setupLearnSection();
   renderBestRecord();
 });
+
+function setupCustomBasemapControls() {
+  const controls = Array.from(document.querySelectorAll("[data-custom-layer]"));
+  const updateControls = () => {
+    controls.forEach((control) => {
+      const enabled = window.customBasemapLayerState[control.dataset.customLayer];
+      control.setAttribute("aria-pressed", String(enabled));
+      control.classList.toggle("is-active", enabled);
+    });
+  };
+
+  controls.forEach((control) => {
+    control.addEventListener("click", () => {
+      const layerName = control.dataset.customLayer;
+      window.customBasemapLayerState[layerName] = !window.customBasemapLayerState[layerName];
+      localStorage.setItem(
+        `bg-municipalities-layer-${layerName}`,
+        String(window.customBasemapLayerState[layerName])
+      );
+      updateControls();
+      window.dispatchEvent(new Event("custombasemapchange"));
+    });
+  });
+
+  updateControls();
+  window.addEventListener("custombasemapchange", () => {
+    customBasemapManagers.forEach((manager) => {
+      manager.sync().catch((error) => manager.reportError(error));
+    });
+  });
+}
+
+function getCustomBasemapData(path) {
+  if (!customBasemapDataCache.has(path)) {
+    const request = fetch(path, { cache: "default" })
+      .then((response) => {
+        if (!response.ok) throw new Error(`Грешка при зареждане на слой (${response.status}): ${path}`);
+        return response.json();
+      })
+      .then((geoJson) => {
+        if (geoJson.type !== "FeatureCollection" || !Array.isArray(geoJson.features)) {
+          throw new Error(`Невалиден GeoJSON слой: ${path}`);
+        }
+        return geoJson;
+      })
+      .catch((error) => {
+        customBasemapDataCache.delete(path);
+        throw error;
+      });
+    customBasemapDataCache.set(path, request);
+  }
+  return customBasemapDataCache.get(path);
+}
+
+function getCustomBasemapStyle(layerName, feature, zoom) {
+  if (layerName === "rivers") {
+    if (zoom <= 6) return { color: "#2387bd", opacity: 0.35, weight: 1.1 };
+    if (zoom <= 7) return { color: "#2387bd", opacity: 0.55, weight: 1.5 };
+    if (zoom <= 8) return { color: "#2387bd", opacity: 0.75, weight: 1.8 };
+    return { color: "#2387bd", opacity: 0.9, weight: 2.2 };
+  }
+  if (layerName === "railways") {
+    const style = zoom <= 6
+      ? { opacity: 0.4, weight: 1.4 }
+      : zoom <= 7
+        ? { opacity: 0.6, weight: 1.65 }
+        : zoom <= 8
+          ? { opacity: 0.78, weight: 1.9 }
+          : { opacity: 0.9, weight: 2.2 };
+    return { color: "#80532d", ...style, dashArray: "5 3" };
+  }
+
+  const roadStyles = {
+    0: { color: "#b34232", overview: [2.4, 0.68], regional: [3.2, 0.78], local: [3.8, 0.86], close: [4.6, 0.9] },
+    1: { color: "#d16d35", overview: [2, 0.64], regional: [2.7, 0.74], local: [3.2, 0.84], close: [3.8, 0.9] },
+    2: { color: "#d2a24d", overview: [1.6, 0.6], regional: [2.1, 0.7], local: [2.5, 0.8], close: [3.1, 0.9] },
+    3: { color: "#738276", local: [1.2, 0.5], close: [2.3, 0.75] },
+    7: { color: "#a5aaa4", local: [0.8, 0.25], close: [1.6, 0.7] },
+  };
+  const roadClass = Number(feature.properties?.RoadClass);
+  const roadStyle = roadStyles[roadClass] || roadStyles[7];
+  const scale = zoom <= 6
+    ? "overview"
+    : zoom === 7
+      ? "regional"
+      : zoom <= 9
+        ? "local"
+        : "close";
+  const scaleStyle = roadStyle[scale];
+  if (!scaleStyle) return { color: roadStyle.color, opacity: 0, weight: 0 };
+  return {
+    color: roadStyle.color,
+    weight: scaleStyle[0],
+    opacity: scaleStyle[1],
+  };
+}
+
+function createCustomBasemapManager(map) {
+  const container = map.getContainer().closest(".card");
+  const status = container?.querySelector("[data-custom-layer-status]");
+  const manager = {
+    geoJsonPath: null,
+    requestId: 0,
+    layers: new Map(),
+    status,
+    updateStyles() {
+      const zoom = map.getZoom();
+      this.layers.forEach((layer, layerName) => {
+        if (map.hasLayer(layer)) {
+          layer.setStyle((feature) => getCustomBasemapStyle(layerName, feature, zoom));
+        }
+      });
+    },
+    reportError(error) {
+      if (status) status.textContent = `Допълнителните слоеве не се зареждат: ${error.message}`;
+    },
+    async sync() {
+      const requestId = ++this.requestId;
+      const selectedLayers = Object.keys(CUSTOM_BASEMAP_LAYER_DEFINITIONS)
+        .filter((layerName) => window.customBasemapLayerState[layerName]);
+
+      if (!this.geoJsonPath || selectedLayers.length === 0) {
+        this.layers.forEach((layer) => map.removeLayer(layer));
+        if (status) status.textContent = "";
+        return;
+      }
+
+      if (status) status.textContent = "Зареждане на допълнителните слоеве...";
+      const province = this.geoJsonPath.split("/").pop().replace(/\.geojson$/i, "");
+      const loadedLayers = await Promise.all(selectedLayers.map(async (layerName) => {
+        const definition = CUSTOM_BASEMAP_LAYER_DEFINITIONS[layerName];
+        const dataPath = `assets/spatial_data/provinces/${province}/${definition.fileName}.geojson`;
+        const geoJson = await getCustomBasemapData(dataPath);
+        return { layerName, geoJson };
+      }));
+      if (requestId !== this.requestId) return;
+
+      if (!map.getPane("customBasemap")) {
+        map.createPane("customBasemap").style.zIndex = "450";
+      }
+      loadedLayers.forEach(({ layerName, geoJson }) => {
+        if (!this.layers.has(layerName)) {
+          let features = geoJson.features;
+          if (layerName === "roads") {
+            features = [...features].sort((a, b) =>
+              Number(b.properties?.RoadClass) - Number(a.properties?.RoadClass)
+            );
+          }
+          this.layers.set(layerName, L.geoJSON({ ...geoJson, features }, {
+            pane: "customBasemap",
+            interactive: false,
+            attribution: layerName === "rivers"
+              ? '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap contributors</a>'
+              : "",
+            style: (feature) => getCustomBasemapStyle(layerName, feature, map.getZoom()),
+          }));
+        }
+      });
+
+      const enabledLayers = new Set(selectedLayers);
+      this.layers.forEach((layer, layerName) => {
+        if (enabledLayers.has(layerName)) {
+          layer.addTo(map);
+        } else {
+          map.removeLayer(layer);
+        }
+      });
+      this.updateStyles();
+      if (status) status.textContent = "";
+    },
+    setGeoJsonPath(geoJsonPath) {
+      if (this.geoJsonPath === geoJsonPath) return;
+      this.requestId += 1;
+      this.layers.forEach((layer) => map.removeLayer(layer));
+      this.layers.clear();
+      this.geoJsonPath = geoJsonPath;
+    },
+  };
+  map.on("zoomend", manager.updateStyles, manager);
+  customBasemapManagers.set(map, manager);
+  return manager;
+}
+
+window.registerCustomBasemapLayers = (map, geoJsonPath) => {
+  const manager = customBasemapManagers.get(map) || createCustomBasemapManager(map);
+  manager.setGeoJsonPath(geoJsonPath);
+  manager.sync().catch((error) => manager.reportError(error));
+};
+
+window.clearCustomBasemapLayers = (map) => {
+  const manager = customBasemapManagers.get(map);
+  if (!manager) return;
+  manager.setGeoJsonPath(null);
+  if (manager.status) manager.status.textContent = "";
+};
 
 function setupBasemapControls() {
   const basemapControls = [
@@ -447,6 +656,7 @@ async function loadLearnMunicipalityMap(container) {
     if (window.basemapEnabled) learnBasemapLayer.addTo(learnMap);
     learnProvinceBoundariesLayer = await addProvinceBoundariesLayer(learnMap);
     learnGeoJsonLayer.bringToFront();
+    window.registerCustomBasemapLayers(learnMap, "assets/geo/bulgaria.geojson");
     learnGeoJsonLayer.eachLayer((layer) => {
       const path = layer.getElement();
       if (path) path.setAttribute("tabindex", "0");
