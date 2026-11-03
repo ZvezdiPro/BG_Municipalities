@@ -114,6 +114,7 @@ const PROVINCE_ASSETS = {
 };
 
 const PROVINCE_RECORD_KEY_PREFIX = "Личен рекорд - ";
+window.BULGARIA_GAME_VALUE = "__bulgaria__";
 const PROVINCE_DATA = window.BULGARIAN_PROVINCES || {};
 const GEOJSON_BASE_PATH = "assets/geo";
 const PROVINCE_GEOJSON = {
@@ -181,19 +182,346 @@ const state = {
   selectedProvinceLearn: "",
 };
 
+const BASEMAP_STORAGE_KEY = "bg-municipalities-basemap-enabled";
+const PROVINCE_BOUNDARIES_STORAGE_KEY = "bg-municipalities-province-boundaries-enabled";
+const PROVINCE_BOUNDARIES_PATH = "assets/geo/provinces.geojson";
+const CUSTOM_BASEMAP_LAYER_DEFINITIONS = {
+  rivers: { fileName: "rivers", label: "Реки" },
+  roads: { fileName: "roads", label: "Пътища" },
+  railways: { fileName: "railways", label: "Железници" },
+};
+window.basemapEnabled = localStorage.getItem(BASEMAP_STORAGE_KEY) !== "false";
+window.provinceBoundariesEnabled = localStorage.getItem(PROVINCE_BOUNDARIES_STORAGE_KEY) !== "false";
+window.customBasemapLayerState = Object.fromEntries(
+  Object.keys(CUSTOM_BASEMAP_LAYER_DEFINITIONS).map((layerName) => [
+    layerName,
+    localStorage.getItem(`bg-municipalities-layer-${layerName}`) === "true",
+  ])
+);
+
+let learnMap = null;
+let learnGeoJsonLayer = null;
+let learnBasemapLayer = null;
+let learnProvinceBoundariesLayer = null;
+let provinceBoundariesPromise = null;
+const customBasemapManagers = new Map();
+const customBasemapDataCache = new Map();
+let selectedLearnMunicipality = null;
+let learnMapLoadPromise = null;
+let learnMunicipalityStatisticsPromise = null;
+
 window.PROVINCE_ASSETS = PROVINCE_ASSETS;
 window.PROVINCE_DATA = PROVINCE_DATA;
 window.findProvinceAssetsByName = findProvinceAssetsByName;
 window.getProvinceGeoJsonPath = getProvinceGeoJsonPath;
 window.getProvinceRecordKeys = getProvinceRecordKeys;
+window.addProvinceBoundariesLayer = addProvinceBoundariesLayer;
 
 document.addEventListener("DOMContentLoaded", () => {
   validateLabelMappings();
   setupNavigation();
+  setupBasemapControls();
+  setupCustomBasemapControls();
   populateProvinceSelects();
   setupLearnSection();
   renderBestRecord();
 });
+
+function setupCustomBasemapControls() {
+  const controls = Array.from(document.querySelectorAll("[data-custom-layer]"));
+  const updateControls = () => {
+    controls.forEach((control) => {
+      const enabled = window.customBasemapLayerState[control.dataset.customLayer];
+      control.setAttribute("aria-pressed", String(enabled));
+      control.classList.toggle("is-active", enabled);
+    });
+  };
+
+  controls.forEach((control) => {
+    control.addEventListener("click", () => {
+      const layerName = control.dataset.customLayer;
+      window.customBasemapLayerState[layerName] = !window.customBasemapLayerState[layerName];
+      localStorage.setItem(
+        `bg-municipalities-layer-${layerName}`,
+        String(window.customBasemapLayerState[layerName])
+      );
+      updateControls();
+      window.dispatchEvent(new Event("custombasemapchange"));
+    });
+  });
+
+  updateControls();
+  window.addEventListener("custombasemapchange", () => {
+    customBasemapManagers.forEach((manager) => {
+      manager.sync().catch((error) => manager.reportError(error));
+    });
+  });
+}
+
+function getCustomBasemapData(path) {
+  if (!customBasemapDataCache.has(path)) {
+    const request = fetch(path, { cache: "default" })
+      .then((response) => {
+        if (!response.ok) throw new Error(`Грешка при зареждане на слой (${response.status}): ${path}`);
+        return response.json();
+      })
+      .then((geoJson) => {
+        if (geoJson.type !== "FeatureCollection" || !Array.isArray(geoJson.features)) {
+          throw new Error(`Невалиден GeoJSON слой: ${path}`);
+        }
+        return geoJson;
+      })
+      .catch((error) => {
+        customBasemapDataCache.delete(path);
+        throw error;
+      });
+    customBasemapDataCache.set(path, request);
+  }
+  return customBasemapDataCache.get(path);
+}
+
+function getCustomBasemapStyle(layerName, feature, zoom) {
+  if (layerName === "rivers") {
+    if (zoom <= 6) return { color: "#2387bd", opacity: 0.15, weight: 1.1 };
+    if (zoom <= 7) return { color: "#2387bd", opacity: 0.25, weight: 1.5 };
+    if (zoom <= 8) return { color: "#2387bd", opacity: 0.4, weight: 1.8 };
+    return { color: "#2387bd", opacity: 0.55, weight: 2.2 };
+  }
+  if (layerName === "railways") {
+    const style = zoom <= 6
+      ? { opacity: 0.4, weight: 1.4 }
+      : zoom <= 7
+        ? { opacity: 0.6, weight: 1.65 }
+        : zoom <= 8
+          ? { opacity: 0.78, weight: 1.9 }
+          : { opacity: 0.9, weight: 2.2 };
+    return { color: "#80532d", ...style, dashArray: "5 3" };
+  }
+
+  const roadStyles = {
+    0: { color: "#b34232", overview: [2.4, 0.55], regional: [3.2, 0.66], local: [3.8, 0.76], close: [4.6, 0.82] },
+    1: { color: "#d16d35", overview: [2, 0.52], regional: [2.7, 0.63], local: [3.2, 0.74], close: [3.8, 0.82] },
+    2: { color: "#d2a24d", overview: [1.6, 0.48], regional: [2.1, 0.59], local: [2.5, 0.7], close: [3.1, 0.82] },
+    3: { color: "#738276", local: [1.2, 0.4], close: [2.3, 0.65] },
+    7: { color: "#a5aaa4", local: [0.8, 0.2], close: [1.6, 0.55] },
+  };
+  const roadClass = Number(feature.properties?.RoadClass);
+  const roadStyle = roadStyles[roadClass] || roadStyles[7];
+  const scale = zoom <= 6
+    ? "overview"
+    : zoom === 7
+      ? "regional"
+      : zoom <= 9
+        ? "local"
+        : "close";
+  const scaleStyle = roadStyle[scale];
+  if (!scaleStyle) return { color: roadStyle.color, opacity: 0, weight: 0 };
+  return {
+    color: roadStyle.color,
+    weight: scaleStyle[0],
+    opacity: scaleStyle[1],
+  };
+}
+
+function createCustomBasemapManager(map) {
+  const container = map.getContainer().closest(".card");
+  const status = container?.querySelector("[data-custom-layer-status]");
+  const manager = {
+    geoJsonPath: null,
+    requestId: 0,
+    layers: new Map(),
+    status,
+    updateStyles() {
+      const zoom = map.getZoom();
+      this.layers.forEach((layer, layerName) => {
+        if (map.hasLayer(layer)) {
+          layer.setStyle((feature) => getCustomBasemapStyle(layerName, feature, zoom));
+        }
+      });
+    },
+    reportError(error) {
+      if (status) status.textContent = `Допълнителните слоеве не се зареждат: ${error.message}`;
+    },
+    async sync() {
+      const requestId = ++this.requestId;
+      const selectedLayers = Object.keys(CUSTOM_BASEMAP_LAYER_DEFINITIONS)
+        .filter((layerName) => window.customBasemapLayerState[layerName]);
+
+      if (!this.geoJsonPath || selectedLayers.length === 0) {
+        this.layers.forEach((layer) => map.removeLayer(layer));
+        if (status) status.textContent = "";
+        return;
+      }
+
+      if (status) status.textContent = "Зареждане на допълнителните слоеве...";
+      const province = this.geoJsonPath.split("/").pop().replace(/\.geojson$/i, "");
+      const loadedLayers = await Promise.all(selectedLayers.map(async (layerName) => {
+        const definition = CUSTOM_BASEMAP_LAYER_DEFINITIONS[layerName];
+        const dataPath = `assets/spatial_data/provinces/${province}/${definition.fileName}.geojson`;
+        const geoJson = await getCustomBasemapData(dataPath);
+        return { layerName, geoJson };
+      }));
+      if (requestId !== this.requestId) return;
+
+      if (!map.getPane("customBasemap")) {
+        map.createPane("customBasemap").style.zIndex = "450";
+      }
+      loadedLayers.forEach(({ layerName, geoJson }) => {
+        if (!this.layers.has(layerName)) {
+          let features = geoJson.features;
+          if (layerName === "roads") {
+            features = [...features].sort((a, b) =>
+              Number(b.properties?.RoadClass) - Number(a.properties?.RoadClass)
+            );
+          }
+          this.layers.set(layerName, L.geoJSON({ ...geoJson, features }, {
+            pane: "customBasemap",
+            interactive: false,
+            attribution: layerName === "rivers"
+              ? '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap contributors</a>'
+              : "",
+            style: (feature) => getCustomBasemapStyle(layerName, feature, map.getZoom()),
+          }));
+        }
+      });
+
+      const enabledLayers = new Set(selectedLayers);
+      this.layers.forEach((layer, layerName) => {
+        if (enabledLayers.has(layerName)) {
+          layer.addTo(map);
+        } else {
+          map.removeLayer(layer);
+        }
+      });
+      this.updateStyles();
+      if (status) status.textContent = "";
+    },
+    setGeoJsonPath(geoJsonPath) {
+      if (this.geoJsonPath === geoJsonPath) return;
+      this.requestId += 1;
+      this.layers.forEach((layer) => map.removeLayer(layer));
+      this.layers.clear();
+      this.geoJsonPath = geoJsonPath;
+    },
+  };
+  map.on("zoomend", manager.updateStyles, manager);
+  customBasemapManagers.set(map, manager);
+  return manager;
+}
+
+window.registerCustomBasemapLayers = (map, geoJsonPath) => {
+  const manager = customBasemapManagers.get(map) || createCustomBasemapManager(map);
+  manager.setGeoJsonPath(geoJsonPath);
+  manager.sync().catch((error) => manager.reportError(error));
+};
+
+window.clearCustomBasemapLayers = (map) => {
+  const manager = customBasemapManagers.get(map);
+  if (!manager) return;
+  manager.setGeoJsonPath(null);
+  if (manager.status) manager.status.textContent = "";
+};
+
+function setupBasemapControls() {
+  const basemapControls = [
+    document.getElementById("learn-basemap-toggle"),
+    document.getElementById("game-basemap-toggle"),
+  ];
+
+  basemapControls.forEach((control) => {
+    control.checked = window.basemapEnabled;
+    control.addEventListener("change", () => {
+      window.basemapEnabled = control.checked;
+      localStorage.setItem(BASEMAP_STORAGE_KEY, String(window.basemapEnabled));
+      basemapControls.forEach((otherControl) => {
+        otherControl.checked = window.basemapEnabled;
+      });
+      window.dispatchEvent(new Event("basemapchange"));
+    });
+  });
+
+  window.addEventListener("basemapchange", () => {
+    if (!learnMap || !learnBasemapLayer) return;
+    if (window.basemapEnabled) {
+      learnBasemapLayer.addTo(learnMap);
+      learnGeoJsonLayer.bringToFront();
+    } else {
+      learnMap.removeLayer(learnBasemapLayer);
+    }
+  });
+
+  const boundaryControls = [
+    document.getElementById("learn-province-boundaries-toggle"),
+    document.getElementById("game-province-boundaries-toggle"),
+  ].filter(Boolean);
+  const gameProvinceSelect = document.getElementById("game-province-select");
+  const gameBoundaryControl = document.getElementById("game-province-boundaries-control");
+  const updateGameBoundaryControl = () => {
+    gameBoundaryControl.hidden = gameProvinceSelect.value !== window.BULGARIA_GAME_VALUE;
+  };
+  updateGameBoundaryControl();
+  gameProvinceSelect.addEventListener("change", updateGameBoundaryControl);
+
+  boundaryControls.forEach((control) => {
+    control.checked = window.provinceBoundariesEnabled;
+    control.addEventListener("change", () => {
+      window.provinceBoundariesEnabled = control.checked;
+      localStorage.setItem(PROVINCE_BOUNDARIES_STORAGE_KEY, String(window.provinceBoundariesEnabled));
+      boundaryControls.forEach((otherControl) => {
+        otherControl.checked = window.provinceBoundariesEnabled;
+      });
+      window.dispatchEvent(new Event("provinceboundarieschange"));
+    });
+  });
+
+  window.addEventListener("provinceboundarieschange", () => {
+    if (!learnMap || !learnProvinceBoundariesLayer) return;
+    if (window.provinceBoundariesEnabled) {
+      learnProvinceBoundariesLayer.addTo(learnMap);
+    } else {
+      learnMap.removeLayer(learnProvinceBoundariesLayer);
+    }
+  });
+}
+
+async function addProvinceBoundariesLayer(map) {
+  if (!provinceBoundariesPromise) {
+    provinceBoundariesPromise = fetch(PROVINCE_BOUNDARIES_PATH, { cache: "no-store" })
+      .then((response) => {
+        if (!response.ok) throw new Error(`Грешка при зареждане на границите на областите (${response.status})`);
+        return response.json();
+      })
+      .then((geoJson) => {
+        if (!Array.isArray(geoJson.features) || geoJson.features.length !== 28) {
+          throw new Error("Очакват се границите на 28 области.");
+        }
+        return geoJson;
+      })
+      .catch((error) => {
+        provinceBoundariesPromise = null;
+        throw error;
+      });
+  }
+
+  const geoJson = await provinceBoundariesPromise;
+  if (!map.getPane("provinceBoundaries")) {
+    map.createPane("provinceBoundaries").style.zIndex = "640";
+  }
+  const getProvinceBoundaryStyle = () => ({
+    color: "#315b43",
+    opacity: 0.95,
+    weight: map.getZoom() <= 6 ? 0.8 : 1.75,
+    fill: false,
+  });
+  const layer = L.geoJSON(geoJson, {
+    pane: "provinceBoundaries",
+    interactive: false,
+    style: getProvinceBoundaryStyle,
+  });
+  map.on("zoomend", () => layer.setStyle(getProvinceBoundaryStyle()));
+  if (window.provinceBoundariesEnabled) layer.addTo(map);
+  return layer;
+}
 
 function setupNavigation() {
   const buttons = Array.from(document.querySelectorAll(".nav-btn"));
@@ -202,6 +530,15 @@ function setupNavigation() {
   buttons.forEach((btn) => {
     btn.addEventListener("click", () => {
       const target = btn.dataset.target;
+      const activeTarget = document.querySelector(".nav-btn.is-active")?.dataset.target;
+      if (activeTarget !== target) {
+        if (activeTarget === "learn-section") {
+          resetLearnSection();
+        } else {
+          clearLearnMunicipalityInfo();
+        }
+      }
+
       buttons.forEach((b) => b.classList.remove("is-active"));
       btn.classList.add("is-active");
 
@@ -213,7 +550,53 @@ function setupNavigation() {
       if (target === "records-section") {
         renderBestRecord();
       }
+
+      if (target === "learn-section") {
+        setTimeout(() => {
+          if (learnMap) {
+            learnMap.invalidateSize();
+            fitLearnMapToCountry();
+          } else {
+            setupLearnMunicipalityMap();
+          }
+        }, 150);
+      }
     });
+  });
+}
+
+function resetLearnSection() {
+  clearLearnMunicipalityInfo();
+  const select = document.getElementById("province-select");
+  select.value = "";
+  state.selectedProvinceLearn = "";
+  renderLabelImage("", document.getElementById("label-image-container"));
+
+  if (selectedLearnMunicipality && learnGeoJsonLayer) {
+    selectedLearnMunicipality.unbindTooltip();
+    learnGeoJsonLayer.resetStyle(selectedLearnMunicipality);
+    selectedLearnMunicipality = null;
+  }
+  document.getElementById("learn-municipality-name").textContent = "Избери община на картата.";
+
+  if (learnMap && learnGeoJsonLayer) {
+    fitLearnMapToCountry();
+  }
+}
+
+function clearLearnMunicipalityInfo() {
+  document.getElementById("learn-municipality-prompt").hidden = false;
+  document.getElementById("learn-municipality-info").hidden = true;
+  document.getElementById("learn-municipality-info").setAttribute("aria-busy", "false");
+  [
+    "learn-municipality-info-title",
+    "learn-municipality-province",
+    "learn-municipality-area",
+    "learn-municipality-population",
+    "learn-municipality-info-status",
+    "learn-natural-increase-rate",
+  ].forEach((id) => {
+    document.getElementById(id).textContent = "";
   });
 }
 
@@ -243,6 +626,252 @@ function setupLearnSection() {
     state.selectedProvinceLearn = select.value;
     renderLabelImage(state.selectedProvinceLearn, container);
   });
+}
+
+function setupLearnMunicipalityMap() {
+  if (learnMap || learnMapLoadPromise) return;
+
+  const container = document.getElementById("learn-map-container");
+  container.classList.add("loading");
+  learnMapLoadPromise = loadLearnMunicipalityMap(container).finally(() => {
+    learnMapLoadPromise = null;
+  });
+}
+
+async function loadLearnMunicipalityMap(container) {
+  try {
+    const response = await fetch("assets/geo/bulgaria.geojson", { cache: "no-store" });
+    if (!response.ok) throw new Error(`Грешка при зареждане на общините (${response.status})`);
+    const geoJson = await response.json();
+    const features = Array.isArray(geoJson.features)
+      ? geoJson.features.filter((feature) => feature.properties?.border_type === "municipality")
+      : [];
+    if (features.length !== 265) {
+      throw new Error(`Очакват се 265 общини, но са намерени ${features.length}.`);
+    }
+
+    container.replaceChildren();
+    learnMap = L.map(container, { fadeAnimation: false }).setView([42.7339, 25.4858], 6);
+    learnGeoJsonLayer = L.geoJSON({ ...geoJson, features }, {
+      style: getLearnMunicipalityStyle,
+      onEachFeature: setupLearnMunicipalityFeature,
+    }).addTo(learnMap);
+
+    const basemapPath = "assets/provinces_basemaps/bulgaria.jpg";
+    const basemapImage = new Image();
+    await new Promise((resolve, reject) => {
+      basemapImage.onload = resolve;
+      basemapImage.onerror = () => reject(new Error(`Базовата карта не може да се зареди: ${basemapPath}`));
+      basemapImage.src = basemapPath;
+      if (basemapImage.complete && basemapImage.naturalWidth > 0) resolve();
+    });
+
+    learnBasemapLayer = L.imageOverlay(basemapPath, learnGeoJsonLayer.getBounds(), {
+      attribution: "Terrain basemap &copy; Esri",
+      interactive: false,
+    });
+    if (window.basemapEnabled) learnBasemapLayer.addTo(learnMap);
+    learnProvinceBoundariesLayer = await addProvinceBoundariesLayer(learnMap);
+    learnGeoJsonLayer.bringToFront();
+    window.registerCustomBasemapLayers(learnMap, "assets/geo/bulgaria.geojson");
+    learnGeoJsonLayer.eachLayer((layer) => {
+      const path = layer.getElement();
+      if (path) path.setAttribute("tabindex", "0");
+    });
+    container.classList.remove("loading");
+    fitLearnMapToCountry();
+  } catch (error) {
+    container.classList.remove("loading");
+    container.replaceChildren();
+    const message = document.createElement("p");
+    message.className = "placeholder";
+    message.textContent = `Картата не може да се зареди: ${error.message}`;
+    container.append(message);
+    document.getElementById("learn-municipality-name").textContent = "Картата не е достъпна.";
+  }
+}
+
+function getLearnMunicipalityStyle() {
+  return {
+    fillColor: "#ffffff",
+    fillOpacity: 0.25,
+    color: "#718477",
+    weight: 2,
+    className: "municipality-boundary",
+  };
+}
+
+function setupLearnMunicipalityFeature(feature, layer) {
+  layer.on({
+    mouseover: () => {
+      showLearnMunicipalityName(feature);
+      if (selectedLearnMunicipality !== layer) {
+        layer.setStyle({ fillColor: "#fff1b8", fillOpacity: 0.6, color: "#8dcf9b", weight: 2.5 });
+        layer.bringToFront();
+      }
+    },
+    mouseout: () => {
+      if (selectedLearnMunicipality !== layer && learnGeoJsonLayer) {
+        learnGeoJsonLayer.resetStyle(layer);
+      }
+      showSelectedLearnMunicipalityName();
+    },
+    click: () => selectLearnMunicipality(feature, layer),
+    keypress: (event) => {
+      if (event.originalEvent.key === "Enter" || event.originalEvent.key === " ") {
+        L.DomEvent.preventDefault(event.originalEvent);
+        selectLearnMunicipality(feature, layer);
+      }
+    },
+  });
+}
+
+function selectLearnMunicipality(feature, layer) {
+  if (selectedLearnMunicipality && learnGeoJsonLayer) {
+    selectedLearnMunicipality.unbindTooltip();
+    learnGeoJsonLayer.resetStyle(selectedLearnMunicipality);
+  }
+  selectedLearnMunicipality = layer;
+  layer.setStyle({
+    fillColor: "#6fb783",
+    fillOpacity: 0.7,
+    color: "#1f2a1f",
+    weight: 3,
+  });
+  layer.bindTooltip(getLearnMunicipalityName(feature), {
+    permanent: true,
+    direction: "center",
+    className: "municipality-label",
+    interactive: false,
+    opacity: 1,
+  }).openTooltip();
+  layer.bringToFront();
+  showLearnMunicipalityName(feature);
+  showLearnMunicipalityStatistics(feature);
+}
+
+function getLearnMunicipalityStatistics() {
+  if (!learnMunicipalityStatisticsPromise) {
+    learnMunicipalityStatisticsPromise = fetch("assets/data/municipality_statistics.json", { cache: "no-store" })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error(`Грешка при зареждане на статистиката (${response.status})`);
+        }
+        return response.json();
+      })
+      .then((statistics) => {
+        if (
+          !statistics ||
+          !statistics.years ||
+          !statistics.municipalities ||
+          !statistics.provinces ||
+          ![
+            statistics.years.area,
+            statistics.years.population,
+            statistics.years.naturalIncrease,
+          ].every(Number.isInteger)
+        ) {
+          throw new Error("Файлът със статистика има неочакван формат.");
+        }
+        return statistics;
+      })
+      .catch((error) => {
+        learnMunicipalityStatisticsPromise = null;
+        throw error;
+      });
+  }
+  return learnMunicipalityStatisticsPromise;
+}
+
+function showLearnMunicipalityStatistics(feature) {
+  const section = document.getElementById("learn-municipality-info");
+  const status = document.getElementById("learn-municipality-info-status");
+  const ekatte = feature.properties?.ekatte;
+  clearLearnMunicipalityInfo();
+  document.getElementById("learn-municipality-prompt").hidden = true;
+  section.hidden = false;
+  requestAnimationFrame(() => learnMap?.invalidateSize({ pan: false }));
+  section.setAttribute("aria-busy", "true");
+  document.getElementById("learn-municipality-info-title").textContent =
+    `Информация за община ${getLearnMunicipalityName(feature)}`;
+  status.textContent = "Статистиката се зарежда...";
+
+  if (!ekatte) {
+    section.setAttribute("aria-busy", "false");
+    status.textContent = "За тази община липсва код за свързване със статистиката на НСИ.";
+    return;
+  }
+
+  getLearnMunicipalityStatistics()
+    .then((statistics) => {
+      if (selectedLearnMunicipality?.feature.properties?.ekatte !== ekatte) return;
+      const municipality = statistics.municipalities[ekatte];
+      const province = municipality && statistics.provinces[municipality.provinceCode];
+      if (!municipality || !province || typeof province.name !== "string") {
+        throw new Error(`Липсват данни от НСИ за община с код ${ekatte}.`);
+      }
+      const displayedValues = [
+        municipality.areaKm2,
+        municipality.population,
+        municipality.naturalIncreaseRatePerThousand,
+      ];
+      if (!displayedValues.every(Number.isFinite)) {
+        throw new Error(`Статистическите данни за код ${ekatte} са невалидни.`);
+      }
+
+      document.getElementById("learn-municipality-area-label").textContent =
+        `Площ (км², ${statistics.years.area})`;
+      document.getElementById("learn-municipality-population-label").textContent =
+        `Население (31.12.${statistics.years.population})`;
+      document.getElementById("learn-natural-increase-label").textContent =
+        `Естествен прираст (‰, ${statistics.years.naturalIncrease})`;
+      document.getElementById("learn-municipality-province").textContent = province.name;
+      document.getElementById("learn-municipality-area").textContent =
+        `${new Intl.NumberFormat("bg-BG", { maximumFractionDigits: 2 }).format(municipality.areaKm2)} км²`;
+      document.getElementById("learn-municipality-population").textContent =
+        new Intl.NumberFormat("bg-BG").format(municipality.population);
+      document.getElementById("learn-natural-increase-rate").textContent =
+        `${new Intl.NumberFormat("bg-BG", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(municipality.naturalIncreaseRatePerThousand)}‰`;
+      status.textContent = "";
+      section.setAttribute("aria-busy", "false");
+    })
+    .catch((error) => {
+      if (selectedLearnMunicipality?.feature.properties?.ekatte !== ekatte) return;
+      status.textContent = `Статистическите данни не могат да бъдат заредени: ${error.message}`;
+      section.setAttribute("aria-busy", "false");
+    });
+}
+
+function getLearnMunicipalityBaseName(feature) {
+  const properties = feature.properties || {};
+  return properties.name_bg || properties.name || "Община без име";
+}
+
+function getLearnMunicipalityName(feature) {
+  return getLearnMunicipalityBaseName(feature);
+}
+
+function showLearnMunicipalityName(feature) {
+  document.getElementById("learn-municipality-name").textContent =
+    `Община ${getLearnMunicipalityName(feature)}`;
+}
+
+function showSelectedLearnMunicipalityName() {
+  const nameElement = document.getElementById("learn-municipality-name");
+  if (!selectedLearnMunicipality) {
+    nameElement.textContent = "Избери община на картата.";
+    return;
+  }
+  showLearnMunicipalityName(selectedLearnMunicipality.feature);
+}
+
+function fitLearnMapToCountry() {
+  if (!learnMap || !learnGeoJsonLayer) return;
+  const bounds = learnGeoJsonLayer.getBounds();
+  const padding = L.point(20, 20);
+  const countryZoom = learnMap.getBoundsZoom(bounds, false, padding);
+  learnMap.setMinZoom(countryZoom);
+  learnMap.fitBounds(bounds, { padding: [20, 20], animate: false });
 }
 
 function renderLabelImage(provinceName, container) {
@@ -326,13 +955,29 @@ function renderBestRecord() {
       const row = document.createElement("tr");
       const provinceCell = document.createElement("td");
       const recordCell = document.createElement("td");
+      const errorsCell = document.createElement("td");
       const keys = getProvinceRecordKeys(provinceName);
 
       provinceCell.textContent = provinceName;
       recordCell.textContent = localStorage.getItem(keys.time) || "Няма запис";
-      row.append(provinceCell, recordCell);
+      const savedErrors = localStorage.getItem(keys.errors);
+      errorsCell.textContent = savedErrors !== null ? savedErrors : "Няма запис";
+      row.append(provinceCell, recordCell, errorsCell);
       recordsBody.append(row);
     });
+
+  const countryRow = document.createElement("tr");
+  const countryCell = document.createElement("td");
+  const countryRecordCell = document.createElement("td");
+  const countryErrorsCell = document.createElement("td");
+  const countryKeys = getProvinceRecordKeys(window.BULGARIA_GAME_VALUE);
+
+  countryCell.textContent = "България (265 общини)";
+  countryRecordCell.textContent = localStorage.getItem(countryKeys.time) || "Няма запис";
+  const countrySavedErrors = localStorage.getItem(countryKeys.errors);
+  countryErrorsCell.textContent = countrySavedErrors !== null ? countrySavedErrors : "Няма запис";
+  countryRow.append(countryCell, countryRecordCell, countryErrorsCell);
+  recordsBody.append(countryRow);
 }
 
 function getProvinceRecordKeys(provinceName) {
@@ -340,6 +985,7 @@ function getProvinceRecordKeys(provinceName) {
   return {
     time: provinceKey,
     milliseconds: `${provinceKey} (ms)`,
+    errors: `${provinceKey} (errors)`,
   };
 }
 

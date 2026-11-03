@@ -6,7 +6,6 @@
     <title>Общините на България</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-    <script src="https://unpkg.com/@turf/turf@6/turf.min.js"></script>
     <link rel="stylesheet" href="style.css" />
   </head>
   <body>
@@ -24,14 +23,78 @@
 
       <main class="main-content">
         <section id="learn-section" class="page-section" aria-labelledby="learn-heading">
+          <div class="card learn-country-card">
+            <h2 id="municipality-map-heading">Общините на България</h2>
+            <div class="map-toolbar learn-map-toolbar">
+              <p id="learn-municipality-name" class="learn-municipality-name" aria-live="polite">
+                Избери община на картата.
+              </p>
+              <label class="basemap-toggle" for="learn-basemap-toggle">
+                Базова карта
+                <input id="learn-basemap-toggle" class="switch-input" type="checkbox" role="switch" />
+              </label>
+              <label class="province-boundaries-toggle" for="learn-province-boundaries-toggle">
+                Граници на областите
+                <input id="learn-province-boundaries-toggle" class="switch-input" type="checkbox" role="switch" />
+              </label>
+              <div class="custom-layer-controls" role="group" aria-label="Векторни слоеве">
+                <button class="custom-layer-btn" type="button" data-custom-layer="rivers" aria-pressed="false">Реки</button>
+                <button class="custom-layer-btn" type="button" data-custom-layer="roads" aria-pressed="false" title="Пътищата са оцветени според класа си">Пътища</button>
+                <button class="custom-layer-btn" type="button" data-custom-layer="railways" aria-pressed="false">Железници</button>
+              </div>
+              <span class="custom-layer-status" data-custom-layer-status aria-live="polite"></span>
+            </div>
+            <div class="learn-map-info-layout">
+              <div id="learn-map-container" class="svg-container interactive-map-container" aria-labelledby="municipality-map-heading">
+                <p class="placeholder">Картата се зарежда...</p>
+              </div>
+              <aside id="learn-municipality-info-panel" class="learn-municipality-info-panel" aria-label="Информация за избраната община">
+                <section id="learn-municipality-prompt" class="card municipality-info municipality-info-prompt" aria-labelledby="learn-municipality-prompt-title">
+                  <h3 id="learn-municipality-prompt-title">Научи повече за общината</h3>
+                  <p class="municipality-info-note">Избери община на картата, за да видиш областта, площта, населението и естествения прираст.</p>
+                </section>
+                <section id="learn-municipality-info" class="card municipality-info" aria-labelledby="learn-municipality-info-title" aria-live="polite" aria-busy="false" hidden>
+                  <h3 id="learn-municipality-info-title"></h3>
+                  <p class="municipality-info-note">
+                    Площта и статистическите данни са за общината.
+                  </p>
+                  <dl class="municipality-stat-grid">
+                    <div class="municipality-stat">
+                      <dt>Област</dt>
+                      <dd id="learn-municipality-province"></dd>
+                    </div>
+                    <div class="municipality-stat">
+                      <dt id="learn-municipality-area-label">Площ (км², 2024)</dt>
+                      <dd id="learn-municipality-area"></dd>
+                    </div>
+                    <div class="municipality-stat">
+                      <dt id="learn-municipality-population-label">Население (31.12.2025)</dt>
+                      <dd id="learn-municipality-population"></dd>
+                    </div>
+                    <div class="municipality-stat">
+                      <dt id="learn-natural-increase-label">Естествен прираст (‰, 2025)</dt>
+                      <dd id="learn-natural-increase-rate"></dd>
+                    </div>
+                  </dl>
+                  <p id="learn-municipality-info-status" class="municipality-info-status" role="status"></p>
+                  <div class="municipality-info-sources">
+                    <strong>Източници:</strong>
+                    <a href="https://www.nsi.bg/en/publications/regions-districts-and-municipalities-in-the-republic-of-bulgaria-2024-9447" target="_blank" rel="noopener noreferrer">НСИ — площ</a>
+                    <a href="https://www.nsi.bg/en/statistical-data/206/651" target="_blank" rel="noopener noreferrer">НСИ — население</a>
+                    <a href="https://www.nsi.bg/en/statistical-data/206/645" target="_blank" rel="noopener noreferrer">НСИ — естествено движение</a>
+                    <a href="https://www.nsi.bg/en/statistical-data/206/647" target="_blank" rel="noopener noreferrer">НСИ — средногодишно население</a>
+                  </div>
+                </section>
+              </aside>
+            </div>
+          </div>
           <div class="learn-layout">
             <div class="card controls-card">
-              <h2 id="learn-heading">Научи</h2>
+              <h2 id="learn-heading">Научи по области</h2>
               <label for="province-select">Избери област:</label>
               <select id="province-select">
                 <option value="">-- Избери област --</option>
               </select>
-              <p class="hint">Ще се покаже изображение с етикети от папка <code>assets/labels</code>.</p>
             </div>
 
             <div class="card image-card">
@@ -46,9 +109,10 @@
           <div class="game-layout">
             <div class="card controls-card">
               <h2 id="game-heading">Играй</h2>
-              <label for="game-province-select">Избери област:</label>
+              <label for="game-province-select">Режим на игра:</label>
               <select id="game-province-select">
-                <option value="">-- Избери област --</option>
+                <option value="__bulgaria__" selected>България — всички 265 общини</option>
+                <option value="">-- или избери област --</option>
               </select>
               <div class="game-actions">
                 <button id="start-game-btn" class="action-btn">Старт</button>
@@ -61,7 +125,7 @@
                 </div>
                 <div class="score-card">
                   <span class="stat-label">ОТКРИТИ</span>
-                  <p id="game-score" class="status-text">0 / 0</p>
+                  <p id="game-score" class="status-text">0 / 265</p>
                 </div>
                 <div class="error-card">
                   <span class="stat-label">ГРЕШКИ</span>
@@ -70,16 +134,32 @@
               </div>
               <div class="prompt-card" aria-live="polite">
                 <span class="stat-label">НАМЕРИ ОБЩИНА</span>
-                <p id="game-prompt" class="game-prompt">Избери област и натисни „Старт“.</p>
+                <p id="game-prompt" class="game-prompt">Натисни „Старт“, за да играеш за цяла България.</p>
               </div>
               <p class="hint">Кликни върху правилната община в картата.</p>
-              <p id="game-status" class="status-text">Готов за начало.</p>
+              <p id="game-status" class="status-text">Готов за начало — 265 общини.</p>
             </div>
 
             <div class="card map-card">
-              <p id="game-feedback" class="game-feedback" aria-live="polite"></p>
+              <div class="map-toolbar">
+                <p id="game-feedback" class="game-feedback" aria-live="polite"></p>
+                <label class="basemap-toggle" for="game-basemap-toggle">
+                  Базова карта
+                  <input id="game-basemap-toggle" class="switch-input" type="checkbox" role="switch" />
+                </label>
+                <label id="game-province-boundaries-control" class="province-boundaries-toggle" for="game-province-boundaries-toggle">
+                  Граници на областите
+                  <input id="game-province-boundaries-toggle" class="switch-input" type="checkbox" role="switch" />
+                </label>
+                <div class="custom-layer-controls" role="group" aria-label="Векторни слоеве">
+                  <button class="custom-layer-btn" type="button" data-custom-layer="rivers" aria-pressed="false">Реки</button>
+                  <button class="custom-layer-btn" type="button" data-custom-layer="roads" aria-pressed="false" title="Пътищата са оцветени според класа си">Пътища</button>
+                  <button class="custom-layer-btn" type="button" data-custom-layer="railways" aria-pressed="false">Железници</button>
+                </div>
+                <span class="custom-layer-status" data-custom-layer-status aria-live="polite"></span>
+              </div>
               <div id="map-container" class="svg-container">
-                <p class="placeholder">Избери област и натисни "Старт".</p>
+                <p class="placeholder">Натисни „Старт“, за да започнеш играта за България.</p>
               </div>
             </div>
           </div>
@@ -93,6 +173,7 @@
                 <tr>
                   <th>Област</th>
                   <th>Личен рекорд</th>
+                  <th>Най-малко грешки</th>
                 </tr>
               </thead>
               <tbody id="records-body"></tbody>

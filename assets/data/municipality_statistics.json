@@ -1,0 +1,1692 @@
+{
+  "years": {
+    "area": 2024,
+    "population": 2025,
+    "naturalIncrease": 2025
+  },
+  "sources": {
+    "area": "https://www.nsi.bg/en/publications/regions-districts-and-municipalities-in-the-republic-of-bulgaria-2024-9447",
+    "population": "https://www.nsi.bg/en/statistical-data/206/651",
+    "naturalMovement": "https://www.nsi.bg/en/statistical-data/206/645",
+    "averagePopulation": "https://www.nsi.bg/en/statistical-data/206/647"
+  },
+  "municipalities": {
+    "BGS01": {
+      "provinceCode": "BGS",
+      "areaKm2": 402.53,
+      "population": 24781,
+      "naturalIncreaseRatePerThousand": -6.84
+    },
+    "BGS04": {
+      "provinceCode": "BGS",
+      "areaKm2": 559.57,
+      "population": 195912,
+      "naturalIncreaseRatePerThousand": -5.11
+    },
+    "BGS06": {
+      "provinceCode": "BGS",
+      "areaKm2": 1148.61,
+      "population": 12711,
+      "naturalIncreaseRatePerThousand": -9.24
+    },
+    "BGS08": {
+      "provinceCode": "BGS",
+      "areaKm2": 354.87,
+      "population": 9236,
+      "naturalIncreaseRatePerThousand": -14.94
+    },
+    "BGS09": {
+      "provinceCode": "BGS",
+      "areaKm2": 833.71,
+      "population": 19638,
+      "naturalIncreaseRatePerThousand": -8.45
+    },
+    "BGS12": {
+      "provinceCode": "BGS",
+      "areaKm2": 783.05,
+      "population": 2479,
+      "naturalIncreaseRatePerThousand": -23.59
+    },
+    "BGS13": {
+      "provinceCode": "BGS",
+      "areaKm2": 512.79,
+      "population": 8396,
+      "naturalIncreaseRatePerThousand": -9.28
+    },
+    "BGS15": {
+      "provinceCode": "BGS",
+      "areaKm2": 420.31,
+      "population": 36656,
+      "naturalIncreaseRatePerThousand": -5.82
+    },
+    "BGS17": {
+      "provinceCode": "BGS",
+      "areaKm2": 412.95,
+      "population": 27092,
+      "naturalIncreaseRatePerThousand": -6.44
+    },
+    "BGS18": {
+      "provinceCode": "BGS",
+      "areaKm2": 689.12,
+      "population": 25521,
+      "naturalIncreaseRatePerThousand": -5.92
+    },
+    "BGS21": {
+      "provinceCode": "BGS",
+      "areaKm2": 479.32,
+      "population": 12679,
+      "naturalIncreaseRatePerThousand": -8.22
+    },
+    "BGS23": {
+      "provinceCode": "BGS",
+      "areaKm2": 794.94,
+      "population": 10130,
+      "naturalIncreaseRatePerThousand": -11.07
+    },
+    "BGS27": {
+      "provinceCode": "BGS",
+      "areaKm2": 350.01,
+      "population": 6269,
+      "naturalIncreaseRatePerThousand": -6.87
+    },
+    "BLG01": {
+      "provinceCode": "BLG",
+      "areaKm2": 476.41,
+      "population": 13668,
+      "naturalIncreaseRatePerThousand": -7.94
+    },
+    "BLG02": {
+      "provinceCode": "BLG",
+      "areaKm2": 293.86,
+      "population": 8807,
+      "naturalIncreaseRatePerThousand": -3.05
+    },
+    "BLG03": {
+      "provinceCode": "BLG",
+      "areaKm2": 621.23,
+      "population": 70708,
+      "naturalIncreaseRatePerThousand": -4.04
+    },
+    "BLG11": {
+      "provinceCode": "BLG",
+      "areaKm2": 331.41,
+      "population": 28686,
+      "naturalIncreaseRatePerThousand": -3.66
+    },
+    "BLG13": {
+      "provinceCode": "BLG",
+      "areaKm2": 388.79,
+      "population": 14683,
+      "naturalIncreaseRatePerThousand": 1.36
+    },
+    "BLG28": {
+      "provinceCode": "BLG",
+      "areaKm2": 345.08,
+      "population": 4201,
+      "naturalIncreaseRatePerThousand": -13.71
+    },
+    "BLG33": {
+      "provinceCode": "BLG",
+      "areaKm2": 651.61,
+      "population": 45755,
+      "naturalIncreaseRatePerThousand": -6.84
+    },
+    "BLG37": {
+      "provinceCode": "BLG",
+      "areaKm2": 440.79,
+      "population": 18306,
+      "naturalIncreaseRatePerThousand": -7.14
+    },
+    "BLG40": {
+      "provinceCode": "BLG",
+      "areaKm2": 997.33,
+      "population": 34243,
+      "naturalIncreaseRatePerThousand": -9.63
+    },
+    "BLG42": {
+      "provinceCode": "BLG",
+      "areaKm2": 332.78,
+      "population": 12549,
+      "naturalIncreaseRatePerThousand": -3.56
+    },
+    "BLG44": {
+      "provinceCode": "BLG",
+      "areaKm2": 553.91,
+      "population": 12457,
+      "naturalIncreaseRatePerThousand": -12.98
+    },
+    "BLG49": {
+      "provinceCode": "BLG",
+      "areaKm2": 358.2,
+      "population": 4378,
+      "naturalIncreaseRatePerThousand": -8.63
+    },
+    "BLG52": {
+      "provinceCode": "BLG",
+      "areaKm2": 328.06,
+      "population": 8203,
+      "naturalIncreaseRatePerThousand": -8.56
+    },
+    "BLG53": {
+      "provinceCode": "BLG",
+      "areaKm2": 339.62,
+      "population": 9000,
+      "naturalIncreaseRatePerThousand": -6.39
+    },
+    "DOB03": {
+      "provinceCode": "DOB",
+      "areaKm2": 523.28,
+      "population": 16452,
+      "naturalIncreaseRatePerThousand": -12.7
+    },
+    "DOB12": {
+      "provinceCode": "DOB",
+      "areaKm2": 981.59,
+      "population": 10471,
+      "naturalIncreaseRatePerThousand": -14.91
+    },
+    "DOB15": {
+      "provinceCode": "DOB",
+      "areaKm2": 1294.05,
+      "population": 17039,
+      "naturalIncreaseRatePerThousand": -17.79
+    },
+    "DOB17": {
+      "provinceCode": "DOB",
+      "areaKm2": 481.11,
+      "population": 12627,
+      "naturalIncreaseRatePerThousand": -12.27
+    },
+    "DOB20": {
+      "provinceCode": "DOB",
+      "areaKm2": 417.39,
+      "population": 3088,
+      "naturalIncreaseRatePerThousand": -9.36
+    },
+    "DOB27": {
+      "provinceCode": "DOB",
+      "areaKm2": 578.59,
+      "population": 11892,
+      "naturalIncreaseRatePerThousand": -13.36
+    },
+    "DOB28": {
+      "provinceCode": "DOB",
+      "areaKm2": 108.94,
+      "population": 68573,
+      "naturalIncreaseRatePerThousand": -10.01
+    },
+    "DOB29": {
+      "provinceCode": "DOB",
+      "areaKm2": 329.45,
+      "population": 3716,
+      "naturalIncreaseRatePerThousand": -20.57
+    },
+    "GAB05": {
+      "provinceCode": "GAB",
+      "areaKm2": 555.36,
+      "population": 48879,
+      "naturalIncreaseRatePerThousand": -13.99
+    },
+    "GAB12": {
+      "provinceCode": "GAB",
+      "areaKm2": 248.26,
+      "population": 7200,
+      "naturalIncreaseRatePerThousand": -21.16
+    },
+    "GAB29": {
+      "provinceCode": "GAB",
+      "areaKm2": 963.87,
+      "population": 28104,
+      "naturalIncreaseRatePerThousand": -12.67
+    },
+    "GAB35": {
+      "provinceCode": "GAB",
+      "areaKm2": 254.81,
+      "population": 8539,
+      "naturalIncreaseRatePerThousand": -20.57
+    },
+    "HKV09": {
+      "provinceCode": "HKV",
+      "areaKm2": 567.34,
+      "population": 41858,
+      "naturalIncreaseRatePerThousand": -12.79
+    },
+    "HKV11": {
+      "provinceCode": "HKV",
+      "areaKm2": 813.69,
+      "population": 4811,
+      "naturalIncreaseRatePerThousand": -14.0
+    },
+    "HKV17": {
+      "provinceCode": "HKV",
+      "areaKm2": 344.0,
+      "population": 8499,
+      "naturalIncreaseRatePerThousand": -4.91
+    },
+    "HKV18": {
+      "provinceCode": "HKV",
+      "areaKm2": 247.14,
+      "population": 1765,
+      "naturalIncreaseRatePerThousand": -13.52
+    },
+    "HKV19": {
+      "provinceCode": "HKV",
+      "areaKm2": 214.58,
+      "population": 5555,
+      "naturalIncreaseRatePerThousand": -13.97
+    },
+    "HKV28": {
+      "provinceCode": "HKV",
+      "areaKm2": 699.74,
+      "population": 19993,
+      "naturalIncreaseRatePerThousand": -7.98
+    },
+    "HKV29": {
+      "provinceCode": "HKV",
+      "areaKm2": 222.81,
+      "population": 7359,
+      "naturalIncreaseRatePerThousand": 0.0
+    },
+    "HKV30": {
+      "provinceCode": "HKV",
+      "areaKm2": 276.51,
+      "population": 6651,
+      "naturalIncreaseRatePerThousand": -9.68
+    },
+    "HKV32": {
+      "provinceCode": "HKV",
+      "areaKm2": 710.22,
+      "population": 8260,
+      "naturalIncreaseRatePerThousand": -15.19
+    },
+    "HKV33": {
+      "provinceCode": "HKV",
+      "areaKm2": 694.17,
+      "population": 22716,
+      "naturalIncreaseRatePerThousand": -6.15
+    },
+    "HKV34": {
+      "provinceCode": "HKV",
+      "areaKm2": 739.35,
+      "population": 78235,
+      "naturalIncreaseRatePerThousand": -8.07
+    },
+    "JAM03": {
+      "provinceCode": "JAM",
+      "areaKm2": 667.18,
+      "population": 2930,
+      "naturalIncreaseRatePerThousand": -19.74
+    },
+    "JAM07": {
+      "provinceCode": "JAM",
+      "areaKm2": 701.19,
+      "population": 12450,
+      "naturalIncreaseRatePerThousand": -10.78
+    },
+    "JAM22": {
+      "provinceCode": "JAM",
+      "areaKm2": 675.71,
+      "population": 9998,
+      "naturalIncreaseRatePerThousand": -5.89
+    },
+    "JAM25": {
+      "provinceCode": "JAM",
+      "areaKm2": 1217.96,
+      "population": 20196,
+      "naturalIncreaseRatePerThousand": -13.86
+    },
+    "JAM26": {
+      "provinceCode": "JAM",
+      "areaKm2": 90.66,
+      "population": 58997,
+      "naturalIncreaseRatePerThousand": -5.73
+    },
+    "KNL04": {
+      "provinceCode": "KNL",
+      "areaKm2": 206.55,
+      "population": 6208,
+      "naturalIncreaseRatePerThousand": -18.49
+    },
+    "KNL05": {
+      "provinceCode": "KNL",
+      "areaKm2": 135.52,
+      "population": 2145,
+      "naturalIncreaseRatePerThousand": -18.85
+    },
+    "KNL27": {
+      "provinceCode": "KNL",
+      "areaKm2": 182.47,
+      "population": 3832,
+      "naturalIncreaseRatePerThousand": -23.47
+    },
+    "KNL29": {
+      "provinceCode": "KNL",
+      "areaKm2": 962.3,
+      "population": 46391,
+      "naturalIncreaseRatePerThousand": -14.18
+    },
+    "KNL31": {
+      "provinceCode": "KNL",
+      "areaKm2": 440.2,
+      "population": 1636,
+      "naturalIncreaseRatePerThousand": -36.69
+    },
+    "KNL38": {
+      "provinceCode": "KNL",
+      "areaKm2": 362.75,
+      "population": 2248,
+      "naturalIncreaseRatePerThousand": -15.0
+    },
+    "KNL41": {
+      "provinceCode": "KNL",
+      "areaKm2": 180.98,
+      "population": 6238,
+      "naturalIncreaseRatePerThousand": -16.64
+    },
+    "KNL48": {
+      "provinceCode": "KNL",
+      "areaKm2": 329.65,
+      "population": 35547,
+      "naturalIncreaseRatePerThousand": -12.12
+    },
+    "KNL50": {
+      "provinceCode": "KNL",
+      "areaKm2": 258.47,
+      "population": 495,
+      "naturalIncreaseRatePerThousand": -35.4
+    },
+    "KRZ02": {
+      "provinceCode": "KRZ",
+      "areaKm2": 339.6,
+      "population": 12201,
+      "naturalIncreaseRatePerThousand": -14.27
+    },
+    "KRZ08": {
+      "provinceCode": "KRZ",
+      "areaKm2": 229.51,
+      "population": 9290,
+      "naturalIncreaseRatePerThousand": -12.25
+    },
+    "KRZ14": {
+      "provinceCode": "KRZ",
+      "areaKm2": 537.36,
+      "population": 21769,
+      "naturalIncreaseRatePerThousand": -10.61
+    },
+    "KRZ15": {
+      "provinceCode": "KRZ",
+      "areaKm2": 842.64,
+      "population": 18280,
+      "naturalIncreaseRatePerThousand": -8.6
+    },
+    "KRZ16": {
+      "provinceCode": "KRZ",
+      "areaKm2": 574.44,
+      "population": 67238,
+      "naturalIncreaseRatePerThousand": -7.61
+    },
+    "KRZ21": {
+      "provinceCode": "KRZ",
+      "areaKm2": 360.06,
+      "population": 15660,
+      "naturalIncreaseRatePerThousand": -11.18
+    },
+    "KRZ35": {
+      "provinceCode": "KRZ",
+      "areaKm2": 326.97,
+      "population": 7590,
+      "naturalIncreaseRatePerThousand": -12.34
+    },
+    "LOV02": {
+      "provinceCode": "LOV",
+      "areaKm2": 238.21,
+      "population": 2561,
+      "naturalIncreaseRatePerThousand": -22.45
+    },
+    "LOV17": {
+      "provinceCode": "LOV",
+      "areaKm2": 177.68,
+      "population": 3454,
+      "naturalIncreaseRatePerThousand": -11.52
+    },
+    "LOV18": {
+      "provinceCode": "LOV",
+      "areaKm2": 946.27,
+      "population": 35792,
+      "naturalIncreaseRatePerThousand": -16.4
+    },
+    "LOV19": {
+      "provinceCode": "LOV",
+      "areaKm2": 453.27,
+      "population": 15128,
+      "naturalIncreaseRatePerThousand": -4.67
+    },
+    "LOV33": {
+      "provinceCode": "LOV",
+      "areaKm2": 697.54,
+      "population": 16945,
+      "naturalIncreaseRatePerThousand": -11.37
+    },
+    "LOV34": {
+      "provinceCode": "LOV",
+      "areaKm2": 894.26,
+      "population": 25205,
+      "naturalIncreaseRatePerThousand": -14.56
+    },
+    "LOV36": {
+      "provinceCode": "LOV",
+      "areaKm2": 523.2,
+      "population": 4942,
+      "naturalIncreaseRatePerThousand": -12.08
+    },
+    "LOV38": {
+      "provinceCode": "LOV",
+      "areaKm2": 204.17,
+      "population": 5419,
+      "naturalIncreaseRatePerThousand": -2.58
+    },
+    "MON02": {
+      "provinceCode": "MON",
+      "areaKm2": 463.7,
+      "population": 13468,
+      "naturalIncreaseRatePerThousand": -18.52
+    },
+    "MON04": {
+      "provinceCode": "MON",
+      "areaKm2": 307.58,
+      "population": 7274,
+      "naturalIncreaseRatePerThousand": -13.23
+    },
+    "MON07": {
+      "provinceCode": "MON",
+      "areaKm2": 194.87,
+      "population": 3824,
+      "naturalIncreaseRatePerThousand": -16.65
+    },
+    "MON11": {
+      "provinceCode": "MON",
+      "areaKm2": 429.52,
+      "population": 7116,
+      "naturalIncreaseRatePerThousand": -13.94
+    },
+    "MON12": {
+      "provinceCode": "MON",
+      "areaKm2": 240.54,
+      "population": 6350,
+      "naturalIncreaseRatePerThousand": -11.67
+    },
+    "MON14": {
+      "provinceCode": "MON",
+      "areaKm2": 298.01,
+      "population": 1864,
+      "naturalIncreaseRatePerThousand": -29.81
+    },
+    "MON24": {
+      "provinceCode": "MON",
+      "areaKm2": 327.91,
+      "population": 19350,
+      "naturalIncreaseRatePerThousand": -19.33
+    },
+    "MON26": {
+      "provinceCode": "MON",
+      "areaKm2": 191.39,
+      "population": 2936,
+      "naturalIncreaseRatePerThousand": -16.58
+    },
+    "MON29": {
+      "provinceCode": "MON",
+      "areaKm2": 676.95,
+      "population": 42776,
+      "naturalIncreaseRatePerThousand": -9.89
+    },
+    "MON36": {
+      "provinceCode": "MON",
+      "areaKm2": 285.43,
+      "population": 2618,
+      "naturalIncreaseRatePerThousand": -20.44
+    },
+    "MON38": {
+      "provinceCode": "MON",
+      "areaKm2": 221.26,
+      "population": 3394,
+      "naturalIncreaseRatePerThousand": -8.51
+    },
+    "PAZ03": {
+      "provinceCode": "PAZ",
+      "areaKm2": 677.65,
+      "population": 4564,
+      "naturalIncreaseRatePerThousand": -13.26
+    },
+    "PAZ04": {
+      "provinceCode": "PAZ",
+      "areaKm2": 346.65,
+      "population": 6710,
+      "naturalIncreaseRatePerThousand": -18.11
+    },
+    "PAZ06": {
+      "provinceCode": "PAZ",
+      "areaKm2": 229.5,
+      "population": 6985,
+      "naturalIncreaseRatePerThousand": -14.63
+    },
+    "PAZ08": {
+      "provinceCode": "PAZ",
+      "areaKm2": 605.06,
+      "population": 31928,
+      "naturalIncreaseRatePerThousand": -5.58
+    },
+    "PAZ14": {
+      "provinceCode": "PAZ",
+      "areaKm2": 209.56,
+      "population": 4625,
+      "naturalIncreaseRatePerThousand": -14.01
+    },
+    "PAZ19": {
+      "provinceCode": "PAZ",
+      "areaKm2": 637.0,
+      "population": 87766,
+      "naturalIncreaseRatePerThousand": -9.92
+    },
+    "PAZ20": {
+      "provinceCode": "PAZ",
+      "areaKm2": 599.21,
+      "population": 20690,
+      "naturalIncreaseRatePerThousand": -9.67
+    },
+    "PAZ21": {
+      "provinceCode": "PAZ",
+      "areaKm2": 135.49,
+      "population": 14163,
+      "naturalIncreaseRatePerThousand": -11.7
+    },
+    "PAZ24": {
+      "provinceCode": "PAZ",
+      "areaKm2": 246.28,
+      "population": 14238,
+      "naturalIncreaseRatePerThousand": -1.54
+    },
+    "PAZ29": {
+      "provinceCode": "PAZ",
+      "areaKm2": 349.59,
+      "population": 20684,
+      "naturalIncreaseRatePerThousand": -9.42
+    },
+    "PAZ32": {
+      "provinceCode": "PAZ",
+      "areaKm2": 224.5,
+      "population": 4131,
+      "naturalIncreaseRatePerThousand": -12.98
+    },
+    "PAZ39": {
+      "provinceCode": "PAZ",
+      "areaKm2": 198.01,
+      "population": 4692,
+      "naturalIncreaseRatePerThousand": -4.71
+    },
+    "PDV01": {
+      "provinceCode": "PDV",
+      "areaKm2": 653.07,
+      "population": 56647,
+      "naturalIncreaseRatePerThousand": -6.43
+    },
+    "PDV07": {
+      "provinceCode": "PDV",
+      "areaKm2": 465.37,
+      "population": 5779,
+      "naturalIncreaseRatePerThousand": -20.42
+    },
+    "PDV12": {
+      "provinceCode": "PDV",
+      "areaKm2": 347.6,
+      "population": 10102,
+      "naturalIncreaseRatePerThousand": -16.43
+    },
+    "PDV13": {
+      "provinceCode": "PDV",
+      "areaKm2": 1039.15,
+      "population": 44470,
+      "naturalIncreaseRatePerThousand": -7.61
+    },
+    "PDV15": {
+      "provinceCode": "PDV",
+      "areaKm2": 280.87,
+      "population": 1990,
+      "naturalIncreaseRatePerThousand": -19.34
+    },
+    "PDV17": {
+      "provinceCode": "PDV",
+      "areaKm2": 342.67,
+      "population": 31043,
+      "naturalIncreaseRatePerThousand": -5.82
+    },
+    "PDV22": {
+      "provinceCode": "PDV",
+      "areaKm2": 101.92,
+      "population": 333994,
+      "naturalIncreaseRatePerThousand": -2.95
+    },
+    "PDV23": {
+      "provinceCode": "PDV",
+      "areaKm2": 533.79,
+      "population": 20494,
+      "naturalIncreaseRatePerThousand": -15.22
+    },
+    "PDV25": {
+      "provinceCode": "PDV",
+      "areaKm2": 263.95,
+      "population": 25280,
+      "naturalIncreaseRatePerThousand": -4.78
+    },
+    "PDV26": {
+      "provinceCode": "PDV",
+      "areaKm2": 524.35,
+      "population": 32446,
+      "naturalIncreaseRatePerThousand": -9.29
+    },
+    "PDV28": {
+      "provinceCode": "PDV",
+      "areaKm2": 192.84,
+      "population": 14487,
+      "naturalIncreaseRatePerThousand": -2.9
+    },
+    "PDV33": {
+      "provinceCode": "PDV",
+      "areaKm2": 298.05,
+      "population": 8772,
+      "naturalIncreaseRatePerThousand": -13.5
+    },
+    "PDV37": {
+      "provinceCode": "PDV",
+      "areaKm2": 548.68,
+      "population": 9842,
+      "naturalIncreaseRatePerThousand": -15.96
+    },
+    "PDV39": {
+      "provinceCode": "PDV",
+      "areaKm2": 54.91,
+      "population": 7094,
+      "naturalIncreaseRatePerThousand": -4.64
+    },
+    "PDV40": {
+      "provinceCode": "PDV",
+      "areaKm2": 48.73,
+      "population": 4136,
+      "naturalIncreaseRatePerThousand": -5.31
+    },
+    "PDV41": {
+      "provinceCode": "PDV",
+      "areaKm2": 61.27,
+      "population": 17536,
+      "naturalIncreaseRatePerThousand": -5.51
+    },
+    "PDV42": {
+      "provinceCode": "PDV",
+      "areaKm2": 147.63,
+      "population": 6092,
+      "naturalIncreaseRatePerThousand": -9.65
+    },
+    "PDV43": {
+      "provinceCode": "PDV",
+      "areaKm2": 56.33,
+      "population": 8086,
+      "naturalIncreaseRatePerThousand": -5.92
+    },
+    "PER08": {
+      "provinceCode": "PER",
+      "areaKm2": 404.17,
+      "population": 5426,
+      "naturalIncreaseRatePerThousand": -25.4
+    },
+    "PER19": {
+      "provinceCode": "PER",
+      "areaKm2": 247.56,
+      "population": 1965,
+      "naturalIncreaseRatePerThousand": -26.32
+    },
+    "PER22": {
+      "provinceCode": "PER",
+      "areaKm2": 143.9,
+      "population": 1231,
+      "naturalIncreaseRatePerThousand": -45.33
+    },
+    "PER32": {
+      "provinceCode": "PER",
+      "areaKm2": 484.89,
+      "population": 80576,
+      "naturalIncreaseRatePerThousand": -10.51
+    },
+    "PER36": {
+      "provinceCode": "PER",
+      "areaKm2": 541.55,
+      "population": 16416,
+      "naturalIncreaseRatePerThousand": -15.78
+    },
+    "PER51": {
+      "provinceCode": "PER",
+      "areaKm2": 574.75,
+      "population": 3257,
+      "naturalIncreaseRatePerThousand": -25.89
+    },
+    "PVN03": {
+      "provinceCode": "PVN",
+      "areaKm2": 282.71,
+      "population": 6927,
+      "naturalIncreaseRatePerThousand": -17.65
+    },
+    "PVN08": {
+      "provinceCode": "PVN",
+      "areaKm2": 458.68,
+      "population": 8535,
+      "naturalIncreaseRatePerThousand": -19.12
+    },
+    "PVN10": {
+      "provinceCode": "PVN",
+      "areaKm2": 674.74,
+      "population": 15595,
+      "naturalIncreaseRatePerThousand": -13.86
+    },
+    "PVN11": {
+      "provinceCode": "PVN",
+      "areaKm2": 307.37,
+      "population": 9415,
+      "naturalIncreaseRatePerThousand": -10.78
+    },
+    "PVN16": {
+      "provinceCode": "PVN",
+      "areaKm2": 414.61,
+      "population": 14246,
+      "naturalIncreaseRatePerThousand": -18.42
+    },
+    "PVN21": {
+      "provinceCode": "PVN",
+      "areaKm2": 418.23,
+      "population": 6322,
+      "naturalIncreaseRatePerThousand": -22.41
+    },
+    "PVN23": {
+      "provinceCode": "PVN",
+      "areaKm2": 244.25,
+      "population": 5313,
+      "naturalIncreaseRatePerThousand": -14.2
+    },
+    "PVN24": {
+      "provinceCode": "PVN",
+      "areaKm2": 809.81,
+      "population": 108440,
+      "naturalIncreaseRatePerThousand": -7.81
+    },
+    "PVN27": {
+      "provinceCode": "PVN",
+      "areaKm2": 238.11,
+      "population": 4527,
+      "naturalIncreaseRatePerThousand": -17.02
+    },
+    "PVN37": {
+      "provinceCode": "PVN",
+      "areaKm2": 485.99,
+      "population": 21479,
+      "naturalIncreaseRatePerThousand": -12.86
+    },
+    "PVN39": {
+      "provinceCode": "PVN",
+      "areaKm2": 318.01,
+      "population": 12091,
+      "naturalIncreaseRatePerThousand": -9.44
+    },
+    "RAZ11": {
+      "provinceCode": "RAZ",
+      "areaKm2": 273.68,
+      "population": 7600,
+      "naturalIncreaseRatePerThousand": -9.02
+    },
+    "RAZ14": {
+      "provinceCode": "RAZ",
+      "areaKm2": 401.8,
+      "population": 18410,
+      "naturalIncreaseRatePerThousand": -10.56
+    },
+    "RAZ16": {
+      "provinceCode": "RAZ",
+      "areaKm2": 432.24,
+      "population": 13235,
+      "naturalIncreaseRatePerThousand": -16.41
+    },
+    "RAZ17": {
+      "provinceCode": "RAZ",
+      "areaKm2": 240.38,
+      "population": 7408,
+      "naturalIncreaseRatePerThousand": -9.65
+    },
+    "RAZ26": {
+      "provinceCode": "RAZ",
+      "areaKm2": 652.34,
+      "population": 41510,
+      "naturalIncreaseRatePerThousand": -11.09
+    },
+    "RAZ29": {
+      "provinceCode": "RAZ",
+      "areaKm2": 250.09,
+      "population": 5735,
+      "naturalIncreaseRatePerThousand": -10.4
+    },
+    "RAZ36": {
+      "provinceCode": "RAZ",
+      "areaKm2": 161.08,
+      "population": 4185,
+      "naturalIncreaseRatePerThousand": -18.83
+    },
+    "RSE03": {
+      "provinceCode": "RSE",
+      "areaKm2": 252.09,
+      "population": 3752,
+      "naturalIncreaseRatePerThousand": -24.31
+    },
+    "RSE04": {
+      "provinceCode": "RSE",
+      "areaKm2": 340.07,
+      "population": 9802,
+      "naturalIncreaseRatePerThousand": -15.29
+    },
+    "RSE05": {
+      "provinceCode": "RSE",
+      "areaKm2": 327.58,
+      "population": 9483,
+      "naturalIncreaseRatePerThousand": -12.57
+    },
+    "RSE08": {
+      "provinceCode": "RSE",
+      "areaKm2": 342.08,
+      "population": 6452,
+      "naturalIncreaseRatePerThousand": -14.78
+    },
+    "RSE13": {
+      "provinceCode": "RSE",
+      "areaKm2": 495.13,
+      "population": 6875,
+      "naturalIncreaseRatePerThousand": -22.99
+    },
+    "RSE27": {
+      "provinceCode": "RSE",
+      "areaKm2": 568.05,
+      "population": 136112,
+      "naturalIncreaseRatePerThousand": -10.55
+    },
+    "RSE33": {
+      "provinceCode": "RSE",
+      "areaKm2": 276.08,
+      "population": 7917,
+      "naturalIncreaseRatePerThousand": -15.18
+    },
+    "RSE37": {
+      "provinceCode": "RSE",
+      "areaKm2": 258.08,
+      "population": 3858,
+      "naturalIncreaseRatePerThousand": -20.74
+    },
+    "SFO06": {
+      "provinceCode": "SFO",
+      "areaKm2": 143.29,
+      "population": 9318,
+      "naturalIncreaseRatePerThousand": -8.06
+    },
+    "SFO07": {
+      "provinceCode": "SFO",
+      "areaKm2": 519.31,
+      "population": 30040,
+      "naturalIncreaseRatePerThousand": -6.44
+    },
+    "SFO09": {
+      "provinceCode": "SFO",
+      "areaKm2": 375.32,
+      "population": 4646,
+      "naturalIncreaseRatePerThousand": -17.29
+    },
+    "SFO10": {
+      "provinceCode": "SFO",
+      "areaKm2": 295.51,
+      "population": 6213,
+      "naturalIncreaseRatePerThousand": -10.42
+    },
+    "SFO16": {
+      "provinceCode": "SFO",
+      "areaKm2": 324.4,
+      "population": 4394,
+      "naturalIncreaseRatePerThousand": -16.08
+    },
+    "SFO17": {
+      "provinceCode": "SFO",
+      "areaKm2": 433.46,
+      "population": 22867,
+      "naturalIncreaseRatePerThousand": -8.79
+    },
+    "SFO18": {
+      "provinceCode": "SFO",
+      "areaKm2": 371.87,
+      "population": 10268,
+      "naturalIncreaseRatePerThousand": -12.07
+    },
+    "SFO20": {
+      "provinceCode": "SFO",
+      "areaKm2": 542.32,
+      "population": 16808,
+      "naturalIncreaseRatePerThousand": -1.9
+    },
+    "SFO24": {
+      "provinceCode": "SFO",
+      "areaKm2": 138.92,
+      "population": 1852,
+      "naturalIncreaseRatePerThousand": -10.69
+    },
+    "SFO25": {
+      "provinceCode": "SFO",
+      "areaKm2": 302.37,
+      "population": 10396,
+      "naturalIncreaseRatePerThousand": -15.96
+    },
+    "SFO26": {
+      "provinceCode": "SFO",
+      "areaKm2": 254.79,
+      "population": 17391,
+      "naturalIncreaseRatePerThousand": -7.41
+    },
+    "SFO34": {
+      "provinceCode": "SFO",
+      "areaKm2": 316.9,
+      "population": 6968,
+      "naturalIncreaseRatePerThousand": -3.29
+    },
+    "SFO39": {
+      "provinceCode": "SFO",
+      "areaKm2": 1211.39,
+      "population": 33375,
+      "naturalIncreaseRatePerThousand": -9.24
+    },
+    "SFO43": {
+      "provinceCode": "SFO",
+      "areaKm2": 870.29,
+      "population": 18184,
+      "naturalIncreaseRatePerThousand": -15.24
+    },
+    "SFO45": {
+      "provinceCode": "SFO",
+      "areaKm2": 187.77,
+      "population": 8478,
+      "naturalIncreaseRatePerThousand": -13.72
+    },
+    "SFO47": {
+      "provinceCode": "SFO",
+      "areaKm2": 163.37,
+      "population": 4598,
+      "naturalIncreaseRatePerThousand": -10.77
+    },
+    "SFO54": {
+      "provinceCode": "SFO",
+      "areaKm2": 76.11,
+      "population": 1385,
+      "naturalIncreaseRatePerThousand": -2.16
+    },
+    "SFO55": {
+      "provinceCode": "SFO",
+      "areaKm2": 152.5,
+      "population": 6789,
+      "naturalIncreaseRatePerThousand": -12.28
+    },
+    "SFO56": {
+      "provinceCode": "SFO",
+      "areaKm2": 208.04,
+      "population": 2156,
+      "naturalIncreaseRatePerThousand": -12.43
+    },
+    "SFO57": {
+      "provinceCode": "SFO",
+      "areaKm2": 70.84,
+      "population": 1129,
+      "naturalIncreaseRatePerThousand": -12.32
+    },
+    "SFO58": {
+      "provinceCode": "SFO",
+      "areaKm2": 44.4,
+      "population": 1453,
+      "naturalIncreaseRatePerThousand": -2.76
+    },
+    "SFO59": {
+      "provinceCode": "SFO",
+      "areaKm2": 68.25,
+      "population": 4238,
+      "naturalIncreaseRatePerThousand": 0.47
+    },
+    "SHU07": {
+      "provinceCode": "SHU",
+      "areaKm2": 209.9,
+      "population": 6233,
+      "naturalIncreaseRatePerThousand": -11.88
+    },
+    "SHU10": {
+      "provinceCode": "SHU",
+      "areaKm2": 457.31,
+      "population": 7651,
+      "naturalIncreaseRatePerThousand": -10.56
+    },
+    "SHU11": {
+      "provinceCode": "SHU",
+      "areaKm2": 288.67,
+      "population": 6193,
+      "naturalIncreaseRatePerThousand": -17.66
+    },
+    "SHU18": {
+      "provinceCode": "SHU",
+      "areaKm2": 293.22,
+      "population": 10768,
+      "naturalIncreaseRatePerThousand": -9.74
+    },
+    "SHU19": {
+      "provinceCode": "SHU",
+      "areaKm2": 274.72,
+      "population": 6139,
+      "naturalIncreaseRatePerThousand": -10.38
+    },
+    "SHU21": {
+      "provinceCode": "SHU",
+      "areaKm2": 264.94,
+      "population": 5333,
+      "naturalIncreaseRatePerThousand": -4.88
+    },
+    "SHU22": {
+      "provinceCode": "SHU",
+      "areaKm2": 317.39,
+      "population": 14171,
+      "naturalIncreaseRatePerThousand": -10.34
+    },
+    "SHU23": {
+      "provinceCode": "SHU",
+      "areaKm2": 277.39,
+      "population": 9833,
+      "naturalIncreaseRatePerThousand": -17.27
+    },
+    "SHU25": {
+      "provinceCode": "SHU",
+      "areaKm2": 353.45,
+      "population": 5185,
+      "naturalIncreaseRatePerThousand": -17.79
+    },
+    "SHU30": {
+      "provinceCode": "SHU",
+      "areaKm2": 655.71,
+      "population": 77095,
+      "naturalIncreaseRatePerThousand": -7.92
+    },
+    "SLS01": {
+      "provinceCode": "SLS",
+      "areaKm2": 248.36,
+      "population": 2149,
+      "naturalIncreaseRatePerThousand": -21.7
+    },
+    "SLS07": {
+      "provinceCode": "SLS",
+      "areaKm2": 480.83,
+      "population": 8417,
+      "naturalIncreaseRatePerThousand": -11.1
+    },
+    "SLS10": {
+      "provinceCode": "SLS",
+      "areaKm2": 565.86,
+      "population": 23435,
+      "naturalIncreaseRatePerThousand": -9.35
+    },
+    "SLS15": {
+      "provinceCode": "SLS",
+      "areaKm2": 314.62,
+      "population": 3842,
+      "naturalIncreaseRatePerThousand": -1.55
+    },
+    "SLS31": {
+      "provinceCode": "SLS",
+      "areaKm2": 516.47,
+      "population": 38980,
+      "naturalIncreaseRatePerThousand": -13.67
+    },
+    "SLS32": {
+      "provinceCode": "SLS",
+      "areaKm2": 270.73,
+      "population": 4283,
+      "naturalIncreaseRatePerThousand": -10.04
+    },
+    "SLS34": {
+      "provinceCode": "SLS",
+      "areaKm2": 448.4,
+      "population": 11259,
+      "naturalIncreaseRatePerThousand": -15.3
+    },
+    "SLV11": {
+      "provinceCode": "SLV",
+      "areaKm2": 857.33,
+      "population": 15704,
+      "naturalIncreaseRatePerThousand": -5.39
+    },
+    "SLV16": {
+      "provinceCode": "SLV",
+      "areaKm2": 876.29,
+      "population": 29525,
+      "naturalIncreaseRatePerThousand": -8.99
+    },
+    "SLV20": {
+      "provinceCode": "SLV",
+      "areaKm2": 1365.7,
+      "population": 109879,
+      "naturalIncreaseRatePerThousand": -3.23
+    },
+    "SLV24": {
+      "provinceCode": "SLV",
+      "areaKm2": 442.25,
+      "population": 13159,
+      "naturalIncreaseRatePerThousand": 4.18
+    },
+    "SML02": {
+      "provinceCode": "SML",
+      "areaKm2": 298.44,
+      "population": 2843,
+      "naturalIncreaseRatePerThousand": -32.07
+    },
+    "SML05": {
+      "provinceCode": "SML",
+      "areaKm2": 173.24,
+      "population": 2312,
+      "naturalIncreaseRatePerThousand": -15.36
+    },
+    "SML09": {
+      "provinceCode": "SML",
+      "areaKm2": 573.83,
+      "population": 8874,
+      "naturalIncreaseRatePerThousand": -17.13
+    },
+    "SML10": {
+      "provinceCode": "SML",
+      "areaKm2": 282.73,
+      "population": 6784,
+      "naturalIncreaseRatePerThousand": -12.92
+    },
+    "SML11": {
+      "provinceCode": "SML",
+      "areaKm2": 173.38,
+      "population": 9037,
+      "naturalIncreaseRatePerThousand": -14.38
+    },
+    "SML16": {
+      "provinceCode": "SML",
+      "areaKm2": 174.89,
+      "population": 9348,
+      "naturalIncreaseRatePerThousand": -10.3
+    },
+    "SML18": {
+      "provinceCode": "SML",
+      "areaKm2": 102.18,
+      "population": 4515,
+      "naturalIncreaseRatePerThousand": -16.95
+    },
+    "SML27": {
+      "provinceCode": "SML",
+      "areaKm2": 186.13,
+      "population": 8122,
+      "naturalIncreaseRatePerThousand": -9.54
+    },
+    "SML31": {
+      "provinceCode": "SML",
+      "areaKm2": 852.59,
+      "population": 31514,
+      "naturalIncreaseRatePerThousand": -11.23
+    },
+    "SML38": {
+      "provinceCode": "SML",
+      "areaKm2": 388.05,
+      "population": 5467,
+      "naturalIncreaseRatePerThousand": -17.51
+    },
+    "SOF46": {
+      "provinceCode": "SOF",
+      "areaKm2": 1343.38,
+      "population": 1303813,
+      "naturalIncreaseRatePerThousand": -2.21
+    },
+    "SZR04": {
+      "provinceCode": "SZR",
+      "areaKm2": 482.17,
+      "population": 6880,
+      "naturalIncreaseRatePerThousand": -15.97
+    },
+    "SZR07": {
+      "provinceCode": "SZR",
+      "areaKm2": 347.77,
+      "population": 9941,
+      "naturalIncreaseRatePerThousand": -13.45
+    },
+    "SZR12": {
+      "provinceCode": "SZR",
+      "areaKm2": 633.19,
+      "population": 62923,
+      "naturalIncreaseRatePerThousand": -8.15
+    },
+    "SZR22": {
+      "provinceCode": "SZR",
+      "areaKm2": 388.69,
+      "population": 9515,
+      "naturalIncreaseRatePerThousand": -6.28
+    },
+    "SZR23": {
+      "provinceCode": "SZR",
+      "areaKm2": 257.34,
+      "population": 2163,
+      "naturalIncreaseRatePerThousand": -27.27
+    },
+    "SZR24": {
+      "provinceCode": "SZR",
+      "areaKm2": 521.0,
+      "population": 12070,
+      "naturalIncreaseRatePerThousand": -7.67
+    },
+    "SZR27": {
+      "provinceCode": "SZR",
+      "areaKm2": 544.8,
+      "population": 15579,
+      "naturalIncreaseRatePerThousand": -12.51
+    },
+    "SZR31": {
+      "provinceCode": "SZR",
+      "areaKm2": 1093.2,
+      "population": 141748,
+      "naturalIncreaseRatePerThousand": -6.91
+    },
+    "SZR36": {
+      "provinceCode": "SZR",
+      "areaKm2": 491.23,
+      "population": 17298,
+      "naturalIncreaseRatePerThousand": -8.01
+    },
+    "SZR37": {
+      "provinceCode": "SZR",
+      "areaKm2": 292.11,
+      "population": 4351,
+      "naturalIncreaseRatePerThousand": -5.51
+    },
+    "SZR38": {
+      "provinceCode": "SZR",
+      "areaKm2": 96.47,
+      "population": 4254,
+      "naturalIncreaseRatePerThousand": 6.84
+    },
+    "TGV02": {
+      "provinceCode": "TGV",
+      "areaKm2": 478.99,
+      "population": 4356,
+      "naturalIncreaseRatePerThousand": -11.82
+    },
+    "TGV22": {
+      "provinceCode": "TGV",
+      "areaKm2": 400.21,
+      "population": 15443,
+      "naturalIncreaseRatePerThousand": -12.21
+    },
+    "TGV23": {
+      "provinceCode": "TGV",
+      "areaKm2": 157.2,
+      "population": 5073,
+      "naturalIncreaseRatePerThousand": -10.33
+    },
+    "TGV24": {
+      "provinceCode": "TGV",
+      "areaKm2": 832.31,
+      "population": 21265,
+      "naturalIncreaseRatePerThousand": -15.86
+    },
+    "TGV35": {
+      "provinceCode": "TGV",
+      "areaKm2": 839.72,
+      "population": 47496,
+      "naturalIncreaseRatePerThousand": -9.02
+    },
+    "VAR01": {
+      "provinceCode": "VAR",
+      "areaKm2": 353.67,
+      "population": 8154,
+      "naturalIncreaseRatePerThousand": -10.29
+    },
+    "VAR02": {
+      "provinceCode": "VAR",
+      "areaKm2": 460.94,
+      "population": 19152,
+      "naturalIncreaseRatePerThousand": -9.13
+    },
+    "VAR04": {
+      "provinceCode": "VAR",
+      "areaKm2": 60.45,
+      "population": 9318,
+      "naturalIncreaseRatePerThousand": -11.18
+    },
+    "VAR05": {
+      "provinceCode": "VAR",
+      "areaKm2": 161.53,
+      "population": 3510,
+      "naturalIncreaseRatePerThousand": -11.01
+    },
+    "VAR06": {
+      "provinceCode": "VAR",
+      "areaKm2": 237.97,
+      "population": 331260,
+      "naturalIncreaseRatePerThousand": -3.85
+    },
+    "VAR08": {
+      "provinceCode": "VAR",
+      "areaKm2": 293.36,
+      "population": 4611,
+      "naturalIncreaseRatePerThousand": -21.89
+    },
+    "VAR09": {
+      "provinceCode": "VAR",
+      "areaKm2": 471.28,
+      "population": 7195,
+      "naturalIncreaseRatePerThousand": -13.27
+    },
+    "VAR13": {
+      "provinceCode": "VAR",
+      "areaKm2": 484.75,
+      "population": 15335,
+      "naturalIncreaseRatePerThousand": -7.56
+    },
+    "VAR14": {
+      "provinceCode": "VAR",
+      "areaKm2": 120.94,
+      "population": 7019,
+      "naturalIncreaseRatePerThousand": -11.49
+    },
+    "VAR16": {
+      "provinceCode": "VAR",
+      "areaKm2": 440.6,
+      "population": 11382,
+      "naturalIncreaseRatePerThousand": -9.25
+    },
+    "VAR24": {
+      "provinceCode": "VAR",
+      "areaKm2": 517.46,
+      "population": 17337,
+      "naturalIncreaseRatePerThousand": -9.99
+    },
+    "VAR26": {
+      "provinceCode": "VAR",
+      "areaKm2": 215.72,
+      "population": 6259,
+      "naturalIncreaseRatePerThousand": -11.63
+    },
+    "VID01": {
+      "provinceCode": "VID",
+      "areaKm2": 411.5,
+      "population": 4653,
+      "naturalIncreaseRatePerThousand": -16.01
+    },
+    "VID03": {
+      "provinceCode": "VID",
+      "areaKm2": 166.21,
+      "population": 694,
+      "naturalIncreaseRatePerThousand": -38.41
+    },
+    "VID06": {
+      "provinceCode": "VID",
+      "areaKm2": 179.61,
+      "population": 3411,
+      "naturalIncreaseRatePerThousand": -27.75
+    },
+    "VID09": {
+      "provinceCode": "VID",
+      "areaKm2": 513.59,
+      "population": 44089,
+      "naturalIncreaseRatePerThousand": -15.8
+    },
+    "VID15": {
+      "provinceCode": "VID",
+      "areaKm2": 184.85,
+      "population": 1217,
+      "naturalIncreaseRatePerThousand": -24.4
+    },
+    "VID16": {
+      "provinceCode": "VID",
+      "areaKm2": 403.25,
+      "population": 4571,
+      "naturalIncreaseRatePerThousand": -18.48
+    },
+    "VID22": {
+      "provinceCode": "VID",
+      "areaKm2": 280.76,
+      "population": 2902,
+      "naturalIncreaseRatePerThousand": -22.11
+    },
+    "VID25": {
+      "provinceCode": "VID",
+      "areaKm2": 229.28,
+      "population": 1075,
+      "naturalIncreaseRatePerThousand": -29.22
+    },
+    "VID30": {
+      "provinceCode": "VID",
+      "areaKm2": 109.17,
+      "population": 2270,
+      "naturalIncreaseRatePerThousand": -23.07
+    },
+    "VID33": {
+      "provinceCode": "VID",
+      "areaKm2": 233.0,
+      "population": 3015,
+      "naturalIncreaseRatePerThousand": -20.79
+    },
+    "VID37": {
+      "provinceCode": "VID",
+      "areaKm2": 327.93,
+      "population": 1568,
+      "naturalIncreaseRatePerThousand": -18.27
+    },
+    "VRC05": {
+      "provinceCode": "VRC",
+      "areaKm2": 210.93,
+      "population": 4606,
+      "naturalIncreaseRatePerThousand": -10.81
+    },
+    "VRC08": {
+      "provinceCode": "VRC",
+      "areaKm2": 546.21,
+      "population": 18850,
+      "naturalIncreaseRatePerThousand": -11.97
+    },
+    "VRC10": {
+      "provinceCode": "VRC",
+      "areaKm2": 706.67,
+      "population": 58721,
+      "naturalIncreaseRatePerThousand": -9.62
+    },
+    "VRC20": {
+      "provinceCode": "VRC",
+      "areaKm2": 285.13,
+      "population": 17368,
+      "naturalIncreaseRatePerThousand": -5.23
+    },
+    "VRC21": {
+      "provinceCode": "VRC",
+      "areaKm2": 327.25,
+      "population": 7249,
+      "naturalIncreaseRatePerThousand": -15.07
+    },
+    "VRC27": {
+      "provinceCode": "VRC",
+      "areaKm2": 519.62,
+      "population": 16260,
+      "naturalIncreaseRatePerThousand": -12.81
+    },
+    "VRC28": {
+      "provinceCode": "VRC",
+      "areaKm2": 209.46,
+      "population": 5342,
+      "naturalIncreaseRatePerThousand": -15.08
+    },
+    "VRC31": {
+      "provinceCode": "VRC",
+      "areaKm2": 326.73,
+      "population": 7916,
+      "naturalIncreaseRatePerThousand": -18.77
+    },
+    "VRC32": {
+      "provinceCode": "VRC",
+      "areaKm2": 301.83,
+      "population": 4632,
+      "naturalIncreaseRatePerThousand": -16.25
+    },
+    "VRC35": {
+      "provinceCode": "VRC",
+      "areaKm2": 189.21,
+      "population": 3558,
+      "naturalIncreaseRatePerThousand": -20.91
+    },
+    "VTR04": {
+      "provinceCode": "VTR",
+      "areaKm2": 884.63,
+      "population": 77067,
+      "naturalIncreaseRatePerThousand": -6.45
+    },
+    "VTR06": {
+      "provinceCode": "VTR",
+      "areaKm2": 317.44,
+      "population": 35866,
+      "naturalIncreaseRatePerThousand": -12.16
+    },
+    "VTR13": {
+      "provinceCode": "VTR",
+      "areaKm2": 670.87,
+      "population": 7290,
+      "naturalIncreaseRatePerThousand": -15.0
+    },
+    "VTR14": {
+      "provinceCode": "VTR",
+      "areaKm2": 232.5,
+      "population": 3311,
+      "naturalIncreaseRatePerThousand": -13.82
+    },
+    "VTR20": {
+      "provinceCode": "VTR",
+      "areaKm2": 177.23,
+      "population": 10609,
+      "naturalIncreaseRatePerThousand": -17.58
+    },
+    "VTR22": {
+      "provinceCode": "VTR",
+      "areaKm2": 622.15,
+      "population": 17399,
+      "naturalIncreaseRatePerThousand": -14.55
+    },
+    "VTR26": {
+      "provinceCode": "VTR",
+      "areaKm2": 463.33,
+      "population": 10491,
+      "naturalIncreaseRatePerThousand": -13.39
+    },
+    "VTR28": {
+      "provinceCode": "VTR",
+      "areaKm2": 625.05,
+      "population": 25291,
+      "naturalIncreaseRatePerThousand": -14.35
+    },
+    "VTR31": {
+      "provinceCode": "VTR",
+      "areaKm2": 508.47,
+      "population": 9596,
+      "naturalIncreaseRatePerThousand": -12.54
+    },
+    "VTR32": {
+      "provinceCode": "VTR",
+      "areaKm2": 157.14,
+      "population": 1883,
+      "naturalIncreaseRatePerThousand": -18.98
+    }
+  },
+  "provinces": {
+    "BGS": {
+      "name": "Бургас"
+    },
+    "BLG": {
+      "name": "Благоевград"
+    },
+    "DOB": {
+      "name": "Добрич"
+    },
+    "GAB": {
+      "name": "Габрово"
+    },
+    "HKV": {
+      "name": "Хасково"
+    },
+    "JAM": {
+      "name": "Ямбол"
+    },
+    "KNL": {
+      "name": "Кюстендил"
+    },
+    "KRZ": {
+      "name": "Кърджали"
+    },
+    "LOV": {
+      "name": "Ловеч"
+    },
+    "MON": {
+      "name": "Монтана"
+    },
+    "PAZ": {
+      "name": "Пазарджик"
+    },
+    "PDV": {
+      "name": "Пловдив"
+    },
+    "PER": {
+      "name": "Перник"
+    },
+    "PVN": {
+      "name": "Плевен"
+    },
+    "RAZ": {
+      "name": "Разград"
+    },
+    "RSE": {
+      "name": "Русе"
+    },
+    "SFO": {
+      "name": "София"
+    },
+    "SHU": {
+      "name": "Шумен"
+    },
+    "SLS": {
+      "name": "Силистра"
+    },
+    "SLV": {
+      "name": "Сливен"
+    },
+    "SML": {
+      "name": "Смолян"
+    },
+    "SOF": {
+      "name": "София (столица)"
+    },
+    "SZR": {
+      "name": "Стара Загора"
+    },
+    "TGV": {
+      "name": "Търговище"
+    },
+    "VAR": {
+      "name": "Варна"
+    },
+    "VID": {
+      "name": "Видин"
+    },
+    "VRC": {
+      "name": "Враца"
+    },
+    "VTR": {
+      "name": "Велико Търново"
+    }
+  },
+  "naturalIncreaseRateFormula": "natural increase / average annual population * 1000"
+}

@@ -2,6 +2,8 @@ import json
 import re
 from pathlib import Path
 
+ROOT = Path(__file__).resolve().parents[1]
+
 def slugify(text: str) -> str:
     translit = {
         "а": "a", "б": "b", "в": "v", "г": "g", "д": "d", "е": "e", "ж": "zh", "з": "z",
@@ -27,7 +29,7 @@ def normalize_name(name):
     return name
 
 def load_provinces():
-    data_js = Path("data.js").read_text(encoding="utf-8")
+    data_js = (ROOT / "data.js").read_text(encoding="utf-8")
     start = data_js.find("const BULGARIAN_PROVINCES = {")
     if start == -1:
         raise ValueError("Could not find BULGARIAN_PROVINCES in data.js")
@@ -74,7 +76,7 @@ def main():
     print(f"Loaded {len(provinces)} provinces with {len(expected_muni)} unique municipalities.")
 
     print("Loading municipalities.geojson (this may take a moment)...")
-    with open("municipalities.geojson", "r", encoding="utf-8") as f:
+    with open(ROOT / "assets" / "municipalities.geojson", "r", encoding="utf-8") as f:
         data = json.load(f)
         
     features = data.get("features", [])
@@ -139,7 +141,7 @@ def main():
         else:
             unmatched_features.append(props.get("name") or "Unknown")
 
-    out_dir = Path("assets/geo")
+    out_dir = ROOT / "assets" / "geo"
     out_dir.mkdir(parents=True, exist_ok=True)
     
     for prov, feats in province_features.items():
@@ -150,6 +152,19 @@ def main():
             "features": feats
         }
         outfile.write_text(json.dumps(fc, ensure_ascii=False), encoding="utf-8")
+
+    country_features = [
+        feature for feature in features
+        if feature.get("properties", {}).get("border_type") == "municipality"
+    ]
+    if len(country_features) != 265:
+        raise ValueError(f"Expected 265 municipality boundaries, found {len(country_features)}")
+    country_file = out_dir / "bulgaria.geojson"
+    country_file.write_text(
+        json.dumps({"type": "FeatureCollection", "features": country_features}, ensure_ascii=False),
+        encoding="utf-8",
+    )
+    print(f"Wrote {country_file.name} with {len(country_features)} municipalities.")
         
     print("\n--- Summary ---")
     print(f"Total features processed: {len(features)}")
